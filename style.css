@@ -98,9 +98,9 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;  /* Far from the main container */
-  width: 380px; /* Enough to fit "you are beautiful" on one line */
-  height: 60px; /* Just tall enough for one line of text */
+  left: 600px;      /* Far from the main container */
+  width: 460px;     /* Wide enough to fit "you are beautiful" in one line */
+  height: 80px;     /* Tall enough for a 20px font + margin */
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 10px;
@@ -108,8 +108,7 @@ button:active {
   user-select: none;
   z-index: 2;
   cursor: default;
-  /* No overflow: hidden or scroll. We want the text to fit exactly. */
-  overflow: hidden;
+  overflow: hidden; /* Hides letters that might appear outside if random pos is large */
 }
 
 /* Each scrambled letter: absolute position + transition for animation */
@@ -140,8 +139,7 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 280px;  /* Slightly smaller on mobile */
-    height: 50px;  
-    font-size: 16px;
+    width: 320px;   /* Also big enough on smaller screens */
+    height: 70px;
   }
 }

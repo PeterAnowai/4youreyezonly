@@ -20,7 +20,7 @@ function startBgMusic() {
 }
 
 /*******************************************************
- * DOM elements
+ * Grab relevant DOM elements
  *******************************************************/
 const yesBtn = document.getElementById('yes-btn');
 const noBtn = document.getElementById('no-btn');
@@ -31,9 +31,9 @@ const scrambledContainer = document.getElementById('scrambled-container');
 
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL = 'https://media3.giphy.com/media/95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
+const SAD_GIF_URL   = 'https://media3.giphy.com/media/95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
 
-// "No" button messages
+// Messages for the NO button
 const noMessages = [
   "Wrong answer! Try again.",
   "Wrong answer. Don’t piss me off."
@@ -108,11 +108,11 @@ noBtn.addEventListener('click', () => {
     >
   `;
 
-  // Switch to fixed so we can move it anywhere
+  // Switch to fixed so we can move it
   noBtn.style.position = 'fixed';
   noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
 
-  // Start moving immediately
+  // Immediately move
   moveNoButton();
 
   // Keep moving for 5 seconds
@@ -120,7 +120,7 @@ noBtn.addEventListener('click', () => {
     moveNoButton();
   }, 600);
 
-  // Clear message & stop after 5 seconds
+  // Clear the message & stop movement after 5s
   setTimeout(() => {
     message.textContent = '';
     clearInterval(movementInterval);
@@ -197,98 +197,89 @@ function doesOverlap(x, y, width, height, containerRect) {
 
 /*******************************************************
  * SCRAMBLED LETTERS: "you are beautiful"
- *  - Randomly placed in #scrambled-container
- *  - On hover, arrange L->R, word by word
+ *  - Place each letter randomly inside #scrambled-container
+ *  - On hover, move them into a left-to-right arrangement 
+ *    one word at a time.
  *******************************************************/
 const sentence = "you are beautiful";
 const words = sentence.split(" "); // ["you", "are", "beautiful"]
 
-// We'll create a letter <span> for each char, 
-// place them randomly, and store final positions.
-const letterSpans = [];
+// Container dimensions
 const containerWidth = scrambledContainer.clientWidth;
 const containerHeight = scrambledContainer.clientHeight;
 
-// 1) Create scrambled letters
-let allLetters = []; // {char, wordIndex, span, finalX, finalY}
+// We'll store each letter's data in an array
+let allLetters = [];
+
+// 1) Build an array of letters/spaces
 words.forEach((word, wIndex) => {
-  // Split each word into letters. 
-  // We'll also keep the space after the word (except maybe last word).
   const lettersInWord = [...word];
+  // Add a space after each word except the last
   if (wIndex < words.length - 1) {
-    lettersInWord.push(" "); // add one space for separation
+    lettersInWord.push(" ");
   }
-  lettersInWord.forEach((char) => {
+  lettersInWord.forEach(char => {
     allLetters.push({ char, wordIndex: wIndex });
   });
 });
 
-// 2) Append spans (scrambled) for each letter
-//    and define final positions to create a left->right layout.
-let currentX = 0;    // We'll build final positions left -> right
-let currentY = 80;   // Middle-ish of the container
-const letterWidth = 20;  // Our fixed letter spacing
-const wordSpacing = 10;  // Additional spacing between words
+// 2) Create and position each letter <span>
+const letterWidth = 20; // horizontal offset per character
+const wordSpacing = 10; // extra offset after spaces
+let currentX = 0;       // final layout X
+let currentY = 30;      // final layout Y (center line in a 80px tall container)
 
-allLetters.forEach((obj, i) => {
+allLetters.forEach((obj) => {
+  // Create the span
   const span = document.createElement('span');
   span.className = 'scrambled-letter';
   span.textContent = obj.char;
 
-  // Random initial x, y within the container
+  // Random initial position in the container
   const randX = Math.random() * (containerWidth - letterWidth);
-  const randY = Math.random() * (containerHeight - 30); 
+  // Subtract ~40 so letters don't appear too close to bottom
+  // (20 px font size + 10 px padding top/bottom).
+  const randY = Math.random() * (containerHeight - 40);
+
   span.style.transform = `translate(${randX}px, ${randY}px)`;
 
-  // Calculate final position for this letter
-  // (We're simply placing letters in a row, left to right.)
+  // Final position (left->right layout)
   obj.finalX = currentX;
   obj.finalY = currentY;
 
-  // Next letter's position
+  // Advance X for next character
   currentX += letterWidth;
-
-  // If this letter is a space, add extra word spacing
   if (obj.char === " ") {
     currentX += wordSpacing;
   }
 
-  // Attach the span to the container
+  // Attach to container
   scrambledContainer.appendChild(span);
-
-  // Remember the span in the object for later
   obj.span = span;
 });
 
-// 3) On pointerenter, animate word by word, each in 2s
+// 3) Animate words in sequence on first hover
 let hasAnimated = false;
 scrambledContainer.addEventListener('pointerenter', () => {
-  if (hasAnimated) return; // only animate once
+  if (hasAnimated) return; // only do once
   hasAnimated = true;
 
-  // We'll do each word in sequence:
-  //   word0 => 2s, then word1 => 2s, then word2 => 2s
   animateWordsSequentially();
 });
 
-/**
- * Animate words one at a time, each taking ~2s
- * "you" -> "are" -> "beautiful"
- */
 function animateWordsSequentially() {
   let currentWordIndex = 0;
 
   function animateNextWord() {
-    if (currentWordIndex >= words.length) {
-      return; // done
-    }
-    // All letters in the current word => move them to final position
+    if (currentWordIndex >= words.length) return; // done
+    // Move letters of this word to their final positions
     const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
     wordLetters.forEach(letterObj => {
-      letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
+      letterObj.span.style.transform = 
+        `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
     });
-    
-    // After 2s, move on to the next word
+
+    // After 2 seconds, move on to next word
     setTimeout(() => {
       currentWordIndex++;
       animateNextWord();
