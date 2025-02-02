@@ -4,7 +4,6 @@ const message = document.getElementById('message');
 const gifContainer = document.getElementById('gif-container');
 const confettiSound = document.getElementById('confetti-sound');
 
-// Messages and state
 const noMessages = [
   "Wrong answer! Try again.",
   "Wrong answer. Don’t piss me off."
@@ -13,7 +12,7 @@ let currentMessageIndex = 0;
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
-// Make "No" button move smoothly within the visible screen
+// Make "No" button move within screen boundaries
 noBtn.addEventListener('mouseover', () => {
   const buttonWidth = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
@@ -22,13 +21,17 @@ noBtn.addEventListener('mouseover', () => {
   const maxX = window.innerWidth - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  // Generate new position coordinates
+  // Generate new random position
   const newX = Math.random() * maxX;
   const newY = Math.random() * maxY;
 
-  // Apply new position with smooth transition
-  noBtn.style.left = `${newX}px`;
-  noBtn.style.top = `${newY}px`;
+  // 1) CLAMP the values so they never exceed 0 or maxX/maxY
+  const safeX = Math.min(Math.max(newX, 0), maxX);
+  const safeY = Math.min(Math.max(newY, 0), maxY);
+
+  // 2) Apply the new position
+  noBtn.style.left = `${safeX}px`;
+  noBtn.style.top = `${safeY}px`;
 });
 
 // Darken background
@@ -41,15 +44,17 @@ function darkenBackground() {
   g = Math.max(g - 20, 0);
   b = Math.max(b - 20, 0);
 
-  backgroundColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  backgroundColor = `#${r.toString(16).padStart(2, '0')}${g
+    .toString(16)
+    .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   document.body.style.backgroundColor = backgroundColor;
 }
 
-// Yes button handler
+// Yes button
 yesBtn.addEventListener('click', () => {
   message.textContent = 'Yay!';
   confettiSound.play();
-  
+
   // Heart confetti
   const heartConfetti = () => {
     confetti({
@@ -58,7 +63,7 @@ yesBtn.addEventListener('click', () => {
       spread: 55,
       origin: { x: 0 },
       shapes: ['heart'],
-      scalar: 2
+      scalar: 2,
     });
     confetti({
       particleCount: 1,
@@ -66,7 +71,7 @@ yesBtn.addEventListener('click', () => {
       spread: 55,
       origin: { x: 1 },
       shapes: ['heart'],
-      scalar: 2
+      scalar: 2,
     });
   };
 
@@ -74,21 +79,33 @@ yesBtn.addEventListener('click', () => {
     setTimeout(heartConfetti, i * 40);
   }
 
+  // Change body background color
   document.body.style.transition = 'background-color 2s ease';
   document.body.style.backgroundColor = 'hotpink';
-  setTimeout(() => document.body.style.transition = '', 2000);
+  setTimeout(() => {
+    document.body.style.transition = '';
+  }, 2000);
 
-  // CORRECTED HAPPY GIF URL
-  gifContainer.innerHTML = `<img src="https://media.tenor.com/5DSfqbYz1J0AAAAC/milk-and-mocha.gif" alt="Happy GIF">`;
+  // Show happy GIF
+  gifContainer.innerHTML = `
+    <img src="https://media.tenor.com/5DSfqbYz1J0AAAAC/milk-and-mocha.gif" 
+         alt="Happy GIF">
+  `;
 });
 
-// No button handler
+// No button
 noBtn.addEventListener('click', () => {
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
   darkenBackground();
 
-  // CORRECTED SAD GIF URL
-  gifContainer.innerHTML = `<img src="https://media.tenor.com/4tDzD4jD2aAAAAAC/milk-and-mocha.gif" alt="Sad GIF">`;
-  setTimeout(() => message.textContent = '', 2000);
+  // Show sad GIF
+  gifContainer.innerHTML = `
+    <img src="https://media.tenor.com/4tDzD4jD2aAAAAAC/milk-and-mocha.gif" 
+         alt="Sad GIF">
+  `;
+  // Clear message after 2 seconds
+  setTimeout(() => {
+    message.textContent = '';
+  }, 2000);
 });

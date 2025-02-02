@@ -1,23 +1,33 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #ffebee;
+/* 1) Make html/body fill the screen with no scroll. */
+html, body {
     margin: 0;
     padding: 0;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* 2) Body can remain flex-centered if you want. */
+  body {
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #ffebee; /* your initial background */
     transition: background-color 0.3s ease;
-    overflow: hidden; /* Prevent scrollbars */
   }
   
+  /* Container styling */
   .container {
     background-color: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     max-width: 90%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* If your container might get big, uncomment:
+       max-height: 80vh; 
+       overflow: auto; 
+    */
   }
   
   h1 {
@@ -53,11 +63,17 @@ body {
     color: white;
   }
   
+  /* 
+     Position 'fixed' or 'absolute' with a top/left starting point 
+     so it can move around the screen. 
+  */
   #no-btn {
     background-color: #f44336;
     color: white;
-    transition: left 0.5s ease, top 0.5s ease; /* Smooth movement */
-    position: fixed; /* Move relative to the viewport */
+    transition: left 0.5s ease, top 0.5s ease;
+    position: fixed;  /* stays relative to the viewport */
+    top: 50%;
+    left: 50%;
   }
   
   #message {
@@ -84,18 +100,20 @@ body {
     to { opacity: 1; }
   }
   
+  /* Media query for small screens */
   @media (max-width: 600px) {
     .container {
       width: 90%;
       padding: 15px;
     }
-    
+  
     h1 {
       font-size: 24px;
     }
-    
+  
     button {
       font-size: 14px;
       padding: 8px 16px;
     }
   }
+  
