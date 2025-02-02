@@ -1,14 +1,14 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #ffebee; /* Initial light pink */
+    background-color: #ffebee;
     margin: 0;
     padding: 0;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.3s ease; /* Smooth transition for darkening */
+    transition: background-color 0.3s ease;
   }
   
   .container {
@@ -16,14 +16,17 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
   }
   
   h1 {
     color: #d32f2f;
+    margin: 0 0 20px 0;
   }
   
   .buttons {
     margin-top: 20px;
+    position: relative;
   }
   
   button {
@@ -33,6 +36,15 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  button:hover {
+    transform: scale(1.05);
+  }
+  
+  button:active {
+    transform: scale(0.95);
   }
   
   #yes-btn {
@@ -46,9 +58,10 @@ body {
   }
   
   #message {
-    margin-top: 20px;
+    margin: 20px 0;
     font-size: 20px;
     color: #d32f2f;
+    min-height: 24px;
   }
   
   #gif-container {
@@ -59,4 +72,27 @@ body {
     max-width: 100%;
     height: auto;
     border-radius: 10px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @media (max-width: 600px) {
+    .container {
+      width: 90%;
+      padding: 15px;
+    }
+    
+    h1 {
+      font-size: 24px;
+    }
+    
+    button {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
   }
