@@ -7,7 +7,7 @@ const confettiSound = document.getElementById('confetti-sound');
 
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL = 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWd1c3oxMXBsb3V3dnBvdHo0MDNxeDN6dXhwMDFlNG10ajUxcHRhbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
+const SAD_GIF_URL = 'https://media3.giphy.com/media/L95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
 
 // Messages for the NO button
 const noMessages = [
