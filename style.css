@@ -9,6 +9,7 @@ body {
     justify-content: center;
     align-items: center;
     transition: background-color 0.3s ease;
+    overflow: hidden; /* Prevent scrollbars */
   }
   
   .container {
@@ -55,6 +56,8 @@ body {
   #no-btn {
     background-color: #f44336;
     color: white;
+    transition: left 0.5s ease, top 0.5s ease; /* Smooth movement */
+    position: fixed; /* Move relative to the viewport */
   }
   
   #message {
