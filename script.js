@@ -29,9 +29,9 @@ const gifContainer = document.getElementById('gif-container');
 const confettiSound = document.getElementById('confetti-sound');
 const scrambledContainer = document.getElementById('scrambled-container');
 
-/* Replace Tenor URLs with reliable Giphy URLs */
+/* Giphy URLs for happy/sad GIFs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL   = 'https://media3.giphy.com/media/95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
+const SAD_GIF_URL   = 'https://media3.giphy.com/media/95W4wv8nnb9K/giphy.gif';
 
 // Messages for the NO button
 const noMessages = [
@@ -40,7 +40,7 @@ const noMessages = [
 ];
 let currentMessageIndex = 0;
 
-// Keep track of the current background color
+// Keep track of current background color
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
@@ -97,7 +97,7 @@ noBtn.addEventListener('click', () => {
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
 
-  // Darken the background
+  // Darken background
   darkenBackground();
 
   // Show sad Mocha Bear GIF
@@ -112,7 +112,7 @@ noBtn.addEventListener('click', () => {
   noBtn.style.position = 'fixed';
   noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
 
-  // Immediately move
+  // Start moving immediately
   moveNoButton();
 
   // Keep moving for 5 seconds
@@ -147,10 +147,10 @@ function darkenBackground() {
  * with the container.
  *******************************************************/
 function moveNoButton() {
-  const buttonWidth = noBtn.offsetWidth;
+  const buttonWidth  = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
 
-  const maxX = window.innerWidth - buttonWidth;
+  const maxX = window.innerWidth  - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
   const container = document.querySelector('.container');
@@ -170,8 +170,9 @@ function moveNoButton() {
   }
 
   noBtn.style.left = `${x}px`;
-  noBtn.style.top = `${y}px`;
+  noBtn.style.top  = `${y}px`;
 
+  // Temporarily disable pointer events to reset hover state
   noBtn.style.pointerEvents = 'none';
   setTimeout(() => {
     noBtn.style.pointerEvents = 'auto';
@@ -197,89 +198,78 @@ function doesOverlap(x, y, width, height, containerRect) {
 
 /*******************************************************
  * SCRAMBLED LETTERS: "you are beautiful"
- *  - Place each letter randomly inside #scrambled-container
- *  - On hover, move them into a left-to-right arrangement 
- *    one word at a time.
+ *  1) Each letter spawns in a random spot inside #scrambled-container
+ *  2) On hover, letters move to a one-line arrangement (word by word)
+ *  3) They stay visible inside the box afterward
  *******************************************************/
 const sentence = "you are beautiful";
 const words = sentence.split(" "); // ["you", "are", "beautiful"]
 
 // Container dimensions
-const containerWidth = scrambledContainer.clientWidth;
+const containerWidth  = scrambledContainer.clientWidth;
 const containerHeight = scrambledContainer.clientHeight;
 
-// We'll store each letter's data in an array
+// We'll store data for each letter
 let allLetters = [];
 
-// 1) Build an array of letters/spaces
+// 1) Build array of letters + spaces
 words.forEach((word, wIndex) => {
-  const lettersInWord = [...word];
-  // Add a space after each word except the last
+  const letters = [...word];
   if (wIndex < words.length - 1) {
-    lettersInWord.push(" ");
+    letters.push(" "); // add space after each word except the last
   }
-  lettersInWord.forEach(char => {
+  letters.forEach(char => {
     allLetters.push({ char, wordIndex: wIndex });
   });
 });
 
-// 2) Create and position each letter <span>
-const letterWidth = 20; // horizontal offset per character
-const wordSpacing = 10; // extra offset after spaces
-let currentX = 0;       // final layout X
-let currentY = 30;      // final layout Y (center line in a 80px tall container)
+// 2) Create & position each letter's span
+const letterWidth = 20; 
+const wordSpacing = 10; 
+let currentX = 0;      
+let currentY = 30;     // near middle of an 80px container
 
-allLetters.forEach((obj) => {
-  // Create the span
+allLetters.forEach(obj => {
   const span = document.createElement('span');
   span.className = 'scrambled-letter';
   span.textContent = obj.char;
 
-  // Random initial position in the container
-  const randX = Math.random() * (containerWidth - letterWidth);
-  // Subtract ~40 so letters don't appear too close to bottom
-  // (20 px font size + 10 px padding top/bottom).
+  // Random initial position inside the container
+  // Subtract some margin so letters don't get cut off
+  const randX = Math.random() * (containerWidth  - letterWidth);
   const randY = Math.random() * (containerHeight - 40);
 
   span.style.transform = `translate(${randX}px, ${randY}px)`;
 
-  // Final position (left->right layout)
+  // Final position in a left-to-right line
   obj.finalX = currentX;
   obj.finalY = currentY;
 
-  // Advance X for next character
+  // Move X for next character
   currentX += letterWidth;
   if (obj.char === " ") {
     currentX += wordSpacing;
   }
 
-  // Attach to container
   scrambledContainer.appendChild(span);
   obj.span = span;
 });
 
-// 3) Animate words in sequence on first hover
-let hasAnimated = false;
-scrambledContainer.addEventListener('pointerenter', () => {
-  if (hasAnimated) return; // only do once
-  hasAnimated = true;
+// 3) Animate unscrambling on hover (word by word)
+scrambledContainer.addEventListener('pointerenter', unscrambleOnce, { once: true });
 
-  animateWordsSequentially();
-});
-
-function animateWordsSequentially() {
+function unscrambleOnce() {
   let currentWordIndex = 0;
 
   function animateNextWord() {
-    if (currentWordIndex >= words.length) return; // done
-    // Move letters of this word to their final positions
+    if (currentWordIndex >= words.length) return;
+
+    // Move letters of this word to final positions
     const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
     wordLetters.forEach(letterObj => {
-      letterObj.span.style.transform = 
-        `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
+      letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
     });
 
-    // After 2 seconds, move on to next word
     setTimeout(() => {
       currentWordIndex++;
       animateNextWord();

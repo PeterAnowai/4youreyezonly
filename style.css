@@ -1,4 +1,4 @@
-/* Make the HTML & body occupy full viewport; no scrollbars */
+/* Make the HTML & body occupy the full viewport; no scrollbars */
 html, body {
   margin: 0;
   padding: 0;
@@ -80,7 +80,7 @@ button:active {
   margin-top: 20px;
 }
 
-/* Fade in the GIFs */
+/* Fade-in for the GIFs */
 #gif-container img {
   max-width: 100%;
   height: auto;
@@ -98,9 +98,9 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;      /* Far from the main container */
-  width: 460px;     /* Wide enough to fit "you are beautiful" in one line */
-  height: 80px;     /* Tall enough for a 20px font + margin */
+  left: 600px;   /* Far from the main container */
+  width: 460px;  /* Enough width for "you are beautiful" at 20px */
+  height: 80px;  /* Enough height for a single line of text */
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 10px;
@@ -108,13 +108,13 @@ button:active {
   user-select: none;
   z-index: 2;
   cursor: default;
-  overflow: hidden; /* Hides letters that might appear outside if random pos is large */
+  overflow: hidden;
 }
 
-/* Each scrambled letter: absolute position + transition for animation */
+/* Each scrambled letter: absolutely positioned + transitions for movement */
 .scrambled-letter {
   position: absolute;
-  transition: transform 2s ease; /* so letters move visibly */
+  transition: transform 2s ease;
   font-weight: bold;
   font-size: 20px;
   color: #333;
@@ -139,7 +139,7 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 320px;   /* Also big enough on smaller screens */
+    width: 320px;  /* Also big enough for smaller screens */
     height: 70px;
   }
 }
