@@ -1,45 +1,49 @@
-/* 1) Make html/body fill the screen with no scroll. */
+/* Make the HTML and body occupy the full viewport with no scrollbars */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden; /* Prevent scrollbars on most screens */
     font-family: Arial, sans-serif;
   }
   
-  /* 2) Body can remain flex-centered if you want. */
+  /* Center content with a background color */
   body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffebee; /* your initial background */
+    background-color: #ffebee; /* Your initial background color */
     transition: background-color 0.3s ease;
   }
   
-  /* Container styling */
+  /* Container to hold the main content */
   .container {
     background-color: white;
     padding: 20px;
     border-radius: 10px;
     max-width: 90%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    /* If your container might get big, uncomment:
-       max-height: 80vh; 
-       overflow: auto; 
+    text-align: center;
+    /* If your container might grow large, use internal scrolling:
+       max-height: 80vh;
+       overflow: auto;
     */
   }
   
+  /* Heading style */
   h1 {
     color: #d32f2f;
     margin: 0 0 20px 0;
   }
   
+  /* Buttons container */
   .buttons {
     margin-top: 20px;
     position: relative;
   }
   
+  /* Generic button styling */
   button {
     padding: 10px 20px;
     margin: 0 10px;
@@ -58,35 +62,39 @@ html, body {
     transform: scale(0.95);
   }
   
+  /* "Yes" button styling */
   #yes-btn {
     background-color: #4caf50;
     color: white;
   }
   
-  /* 
-     Position 'fixed' or 'absolute' with a top/left starting point 
-     so it can move around the screen. 
+  /* "No" button styling:
+     - position: fixed to move relative to the viewport
+     - transitions for smooth movement
   */
   #no-btn {
     background-color: #f44336;
     color: white;
-    transition: left 0.5s ease, top 0.5s ease;
-    position: fixed;  /* stays relative to the viewport */
+    position: fixed;
     top: 50%;
     left: 50%;
+    transition: left 0.5s ease, top 0.5s ease;
   }
   
+  /* Message display */
   #message {
     margin: 20px 0;
     font-size: 20px;
     color: #d32f2f;
-    min-height: 24px;
+    min-height: 24px; /* Reserve space so the layout doesn’t jump */
   }
   
+  /* GIF container */
   #gif-container {
     margin-top: 20px;
   }
   
+  /* Fade-in animation for GIFs */
   #gif-container img {
     max-width: 100%;
     height: auto;
@@ -97,16 +105,16 @@ html, body {
   
   @keyframes fadeIn {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
   }
   
-  /* Media query for small screens */
+  /* Responsive adjustments */
   @media (max-width: 600px) {
     .container {
       width: 90%;
       padding: 15px;
     }
-  
+    
     h1 {
       font-size: 24px;
     }
