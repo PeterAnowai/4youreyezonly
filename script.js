@@ -34,10 +34,6 @@ function darkenBackground() {
 
 // When "Yes" is clicked
 yesBtn.addEventListener('click', () => {
-  // Reset background color to hot pink
-  backgroundColor = 'hotpink';
-  document.body.style.backgroundColor = backgroundColor;
-
   // Display "Yay!" and trigger confetti
   message.textContent = 'Yay!';
   confetti({
@@ -45,6 +41,15 @@ yesBtn.addEventListener('click', () => {
     spread: 70,
     origin: { y: 0.6 }
   });
+
+  // Slowly transition the background color to hot pink
+  document.body.style.transition = 'background-color 2s ease'; // 2-second transition
+  document.body.style.backgroundColor = 'hotpink';
+
+  // Reset the transition after the animation is done
+  setTimeout(() => {
+    document.body.style.transition = ''; // Remove the transition
+  }, 2000); // Match the duration of the transition
 });
 
 // When "No" is clicked
