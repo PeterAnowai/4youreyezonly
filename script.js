@@ -9,21 +9,21 @@ const noMessages = [
 ];
 let currentMessageIndex = 0;
 
-// Initial background color
-let backgroundColor = '#ffebee'; // Light pink
+// Initial background color (light pink)
+let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
-// Function to darken the background color
+// Function to darken the background color by one shade
 function darkenBackground() {
   // Convert the hex color to RGB
   let r = parseInt(backgroundColor.slice(1, 3), 16);
   let g = parseInt(backgroundColor.slice(3, 5), 16);
   let b = parseInt(backgroundColor.slice(5, 7), 16);
 
-  // Darken each RGB component by 10%
-  r = Math.floor(r * 0.9);
-  g = Math.floor(g * 0.9);
-  b = Math.floor(b * 0.9);
+  // Reduce each RGB component by 20 (one shade darker)
+  r = Math.max(r - 20, 0); // Ensure it doesn't go below 0
+  g = Math.max(g - 20, 0);
+  b = Math.max(b - 20, 0);
 
   // Convert back to hex
   backgroundColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
@@ -55,7 +55,7 @@ noBtn.addEventListener('click', () => {
   // Alternate to the next message
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
 
-  // Darken the background color
+  // Darken the background color by one shade
   darkenBackground();
 
   // Clear the message after 1 second
