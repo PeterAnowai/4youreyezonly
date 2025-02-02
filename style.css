@@ -24,6 +24,8 @@ html, body {
     max-width: 90%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
+    position: relative; /* Ensure the container stays above the button */
+    z-index: 1; /* Higher z-index than the button */
   }
   
   h1 {
@@ -68,6 +70,7 @@ html, body {
     top: 50%;
     left: 50%;
     transition: left 0.5s ease, top 0.5s ease;
+    z-index: 0; /* Lower z-index than the container */
   }
   
   #message {
