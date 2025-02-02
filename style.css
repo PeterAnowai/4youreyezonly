@@ -98,7 +98,7 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 20px;
+  left: 600px; /* Increased to push the text container much further away */
   font-size: 20px;
   font-weight: bold;
   cursor: default; /* Not clickable, but we can hover */
@@ -125,7 +125,7 @@ button:active {
 
   #scrambled-container {
     top: 10px;
-    left: 10px;
+    left: 10px; /* Smaller offset on mobile to ensure it remains visible */
     font-size: 16px;
   }
 }
