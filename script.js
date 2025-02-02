@@ -1,6 +1,7 @@
 const yesBtn = document.getElementById('yes-btn');
 const noBtn = document.getElementById('no-btn');
 const message = document.getElementById('message');
+const gifContainer = document.getElementById('gif-container');
 
 // Array of messages for the "No" button
 const noMessages = [
@@ -50,6 +51,9 @@ yesBtn.addEventListener('click', () => {
   setTimeout(() => {
     document.body.style.transition = ''; // Remove the transition
   }, 2000); // Match the duration of the transition
+
+  // Display the happy GIF
+  gifContainer.innerHTML = `<img src="https://media.tenor.com/5DSfqbYz1J0AAAAC/milk-and-mocha-happy.gif" alt="Happy GIF">`;
 });
 
 // When "No" is clicked
@@ -62,6 +66,9 @@ noBtn.addEventListener('click', () => {
 
   // Darken the background color by one shade
   darkenBackground();
+
+  // Display the sad GIF
+  gifContainer.innerHTML = `<img src="https://media.tenor.com/4tDzD4jD2aAAAAAC/milk-and-mocha-crying.gif" alt="Sad GIF">`;
 
   // Clear the message after 1 second
   setTimeout(() => {
