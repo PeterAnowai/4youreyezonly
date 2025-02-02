@@ -132,10 +132,10 @@ noBtn.addEventListener('click', () => {
     >
   `;
 
-  // Clear message after 2 seconds
+  // Clear message after 4 seconds
   setTimeout(() => {
     message.textContent = '';
-  }, 2000);
+  }, 4000);
 
   // Reset runaways (start new cycle)
   timesMoved = 0;
