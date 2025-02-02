@@ -1,4 +1,4 @@
-/* Use the full viewport without scrollbars */
+/* Use full viewport, no scrollbars */
 html, body {
     margin: 0;
     padding: 0;
@@ -60,7 +60,7 @@ html, body {
     color: white;
   }
   
-  /* No button: position it fixed so we can move it around the viewport */
+  /* No button: positioned so it can move around the viewport */
   #no-btn {
     background-color: #f44336;
     color: white;
@@ -70,7 +70,6 @@ html, body {
     transition: left 0.5s ease, top 0.5s ease;
   }
   
-  /* Message styling */
   #message {
     margin: 20px 0;
     font-size: 20px;
@@ -78,7 +77,6 @@ html, body {
     min-height: 24px;
   }
   
-  /* GIF container with fade-in animation */
   #gif-container {
     margin-top: 20px;
   }
@@ -102,7 +100,7 @@ html, body {
       width: 90%;
       padding: 15px;
     }
-    
+  
     h1 {
       font-size: 24px;
     }
