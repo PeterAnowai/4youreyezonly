@@ -29,7 +29,7 @@ document.body.style.backgroundColor = backgroundColor;
 /* =============== YES BUTTON =============== */
 yesBtn.addEventListener('click', () => {
   message.textContent = 'Yay!';
-  confettiSound.play(); // Play the new sound
+  confettiSound.play();
 
   // Heart confetti
   for (let i = 0; i < 50; i++) {
@@ -137,20 +137,15 @@ function moveNoButton() {
   const maxX = window.innerWidth - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  // Get the container's position and dimensions
-  const container = document.querySelector('.container');
-  const containerRect = container.getBoundingClientRect();
+  const newX = Math.random() * maxX;
+  const newY = Math.random() * maxY;
 
-  // Define a safe area where the button won't overlap the container
-  const safeX = Math.random() * (maxX - containerRect.width) + containerRect.width;
-  const safeY = Math.random() * (maxY - containerRect.height) + containerRect.height;
+  // Optional clamp
+  const safeX = Math.min(Math.max(newX, 0), maxX);
+  const safeY = Math.min(Math.max(newY, 0), maxY);
 
-  // Clamp the button's position to ensure it stays within the viewport
-  const clampedX = Math.min(Math.max(safeX, 0), maxX);
-  const clampedY = Math.min(Math.max(safeY, 0), maxY);
-
-  noBtn.style.left = `${clampedX}px`;
-  noBtn.style.top = `${clampedY}px`;
+  noBtn.style.left = `${safeX}px`;
+  noBtn.style.top = `${safeY}px`;
 
   // Temporarily disable pointer events to reset the hover state
   noBtn.style.pointerEvents = 'none';
