@@ -7,7 +7,7 @@ const confettiSound = document.getElementById('confetti-sound');
 
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL = 'https://media.giphy.com/media/l378zKVk7Eh3yHoJi/giphy.gif'; // New crying meme GIF
+const SAD_GIF_URL = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzFmY2V1Z2N0b3l4dW5jZ3J6eWZ5bG5jZ3J6eWZ5bG5jZ3J6eWZ5bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l2QEiHwQZJkQ2ZqgU/giphy.gif'; // Sad Mocha Bear GIF
 
 // Messages for the NO button
 const noMessages = [
@@ -92,11 +92,11 @@ noBtn.addEventListener('click', () => {
   // Darken the background
   darkenBackground();
 
-  // Show sad GIF (using Giphy URL)
+  // Show sad Mocha Bear GIF
   gifContainer.innerHTML = `
     <img
       src="${SAD_GIF_URL}"
-      alt="Sad GIF"
+      alt="Sad Mocha Bear GIF"
     >
   `;
 
@@ -137,15 +137,20 @@ function moveNoButton() {
   const maxX = window.innerWidth - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  const newX = Math.random() * maxX;
-  const newY = Math.random() * maxY;
+  // Get the container's position and dimensions
+  const container = document.querySelector('.container');
+  const containerRect = container.getBoundingClientRect();
 
-  // Optional clamp
-  const safeX = Math.min(Math.max(newX, 0), maxX);
-  const safeY = Math.min(Math.max(newY, 0), maxY);
+  // Define a safe area where the button won't overlap the container
+  const safeX = Math.random() * (maxX - containerRect.width) + containerRect.width;
+  const safeY = Math.random() * (maxY - containerRect.height) + containerRect.height;
 
-  noBtn.style.left = `${safeX}px`;
-  noBtn.style.top = `${safeY}px`;
+  // Clamp the button's position to ensure it stays within the viewport
+  const clampedX = Math.min(Math.max(safeX, 0), maxX);
+  const clampedY = Math.min(Math.max(safeY, 0), maxY);
+
+  noBtn.style.left = `${clampedX}px`;
+  noBtn.style.top = `${clampedY}px`;
 
   // Temporarily disable pointer events to reset the hover state
   noBtn.style.pointerEvents = 'none';
