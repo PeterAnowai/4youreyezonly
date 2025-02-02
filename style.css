@@ -80,7 +80,7 @@ button:active {
   margin-top: 20px;
 }
 
-/* Fade-in for the GIFs */
+/* Fade in GIFs */
 #gif-container img {
   max-width: 100%;
   height: auto;
@@ -98,9 +98,9 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;   /* Far from the main container */
-  width: 460px;  /* Enough width for "you are beautiful" at 20px */
-  height: 80px;  /* Enough height for a single line of text */
+  left: 600px;      /* Far from the main container */
+  width: 400px;     /* Smaller width, enough for the text */
+  height: 60px;     /* Smaller height, just enough for one line */
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 10px;
@@ -108,10 +108,10 @@ button:active {
   user-select: none;
   z-index: 2;
   cursor: default;
-  overflow: hidden;
+  overflow: hidden; /* No scrollbars */
 }
 
-/* Each scrambled letter: absolutely positioned + transitions for movement */
+/* Each scrambled letter: absolute position + transition for animation */
 .scrambled-letter {
   position: absolute;
   transition: transform 2s ease;
@@ -139,7 +139,7 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 320px;  /* Also big enough for smaller screens */
-    height: 70px;
+    width: 320px;  /* Also big enough on smaller screens */
+    height: 60px;
   }
 }

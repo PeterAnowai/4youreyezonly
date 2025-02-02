@@ -40,7 +40,7 @@ const noMessages = [
 ];
 let currentMessageIndex = 0;
 
-// Keep track of current background color
+// Track current background color
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
@@ -108,11 +108,11 @@ noBtn.addEventListener('click', () => {
     >
   `;
 
-  // Switch to fixed so we can move it
+  // Switch to fixed for free movement
   noBtn.style.position = 'fixed';
   noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
 
-  // Start moving immediately
+  // Immediately move
   moveNoButton();
 
   // Keep moving for 5 seconds
@@ -153,8 +153,7 @@ function moveNoButton() {
   const maxX = window.innerWidth  - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  const container = document.querySelector('.container');
-  const containerRect = container.getBoundingClientRect();
+  const containerRect = document.querySelector('.container').getBoundingClientRect();
 
   let x, y;
   let attempts = 0;
@@ -172,7 +171,7 @@ function moveNoButton() {
   noBtn.style.left = `${x}px`;
   noBtn.style.top  = `${y}px`;
 
-  // Temporarily disable pointer events to reset hover state
+  // Temporarily disable pointer events to reset hover
   noBtn.style.pointerEvents = 'none';
   setTimeout(() => {
     noBtn.style.pointerEvents = 'auto';
@@ -199,15 +198,15 @@ function doesOverlap(x, y, width, height, containerRect) {
 /*******************************************************
  * SCRAMBLED LETTERS: "you are beautiful"
  *  1) Each letter spawns in a random spot inside #scrambled-container
- *  2) On hover, letters move to a one-line arrangement (word by word)
- *  3) They stay visible inside the box afterward
+ *  2) On hover, letters move to a single-line arrangement
+ *     one word at a time.
  *******************************************************/
 const sentence = "you are beautiful";
 const words = sentence.split(" "); // ["you", "are", "beautiful"]
 
 // Container dimensions
-const containerWidth  = scrambledContainer.clientWidth;
-const containerHeight = scrambledContainer.clientHeight;
+const containerWidth  = scrambledContainer.clientWidth;  // ~400px
+const containerHeight = scrambledContainer.clientHeight; // ~60px
 
 // We'll store data for each letter
 let allLetters = [];
@@ -216,18 +215,18 @@ let allLetters = [];
 words.forEach((word, wIndex) => {
   const letters = [...word];
   if (wIndex < words.length - 1) {
-    letters.push(" "); // add space after each word except the last
+    letters.push(" "); // space after each word except the last
   }
   letters.forEach(char => {
     allLetters.push({ char, wordIndex: wIndex });
   });
 });
 
-// 2) Create & position each letter's span
-const letterWidth = 20; 
-const wordSpacing = 10; 
-let currentX = 0;      
-let currentY = 30;     // near middle of an 80px container
+// 2) Create & position each letter <span>
+const letterWidth = 20;  // horizontal offset per character
+const wordSpacing = 10;  // extra offset for spaces
+let currentX = 0;        
+let currentY = 20;       // vertical position to keep text visible in 60px height
 
 allLetters.forEach(obj => {
   const span = document.createElement('span');
@@ -235,17 +234,17 @@ allLetters.forEach(obj => {
   span.textContent = obj.char;
 
   // Random initial position inside the container
-  // Subtract some margin so letters don't get cut off
+  // Subtract a bit so letters aren't clipped at edges
   const randX = Math.random() * (containerWidth  - letterWidth);
-  const randY = Math.random() * (containerHeight - 40);
+  const randY = Math.random() * (containerHeight - 30);
 
   span.style.transform = `translate(${randX}px, ${randY}px)`;
 
-  // Final position in a left-to-right line
+  // Final position (left to right)
   obj.finalX = currentX;
   obj.finalY = currentY;
 
-  // Move X for next character
+  // Advance currentX for next character
   currentX += letterWidth;
   if (obj.char === " ") {
     currentX += wordSpacing;
@@ -256,18 +255,17 @@ allLetters.forEach(obj => {
 });
 
 // 3) Animate unscrambling on hover (word by word)
-scrambledContainer.addEventListener('pointerenter', unscrambleOnce, { once: true });
-
-function unscrambleOnce() {
+scrambledContainer.addEventListener('pointerenter', () => {
   let currentWordIndex = 0;
-
+  
   function animateNextWord() {
     if (currentWordIndex >= words.length) return;
 
-    // Move letters of this word to final positions
+    // Move letters of this word into their final positions
     const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
     wordLetters.forEach(letterObj => {
-      letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
+      letterObj.span.style.transform = 
+        `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
     });
 
     setTimeout(() => {
@@ -277,4 +275,4 @@ function unscrambleOnce() {
   }
 
   animateNextWord();
-}
+}, { once: true });
