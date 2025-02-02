@@ -29,7 +29,7 @@ document.body.style.backgroundColor = backgroundColor;
 /* =============== YES BUTTON =============== */
 yesBtn.addEventListener('click', () => {
   message.textContent = 'Yay!';
-  confettiSound.play();
+  confettiSound.play(); // Play the new sound
 
   // Heart confetti
   for (let i = 0; i < 50; i++) {
