@@ -7,7 +7,7 @@ const confettiSound = document.getElementById('confetti-sound');
 
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL = 'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif';
+const SAD_GIF_URL = 'https://media.giphy.com/media/l378zKVk7Eh3yHoJi/giphy.gif'; // New crying meme GIF
 
 // Messages for the NO button
 const noMessages = [
