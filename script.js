@@ -47,7 +47,7 @@ document.body.style.backgroundColor = backgroundColor;
  * YES BUTTON
  *******************************************************/
 yesBtn.addEventListener('click', () => {
-  message.textContent = 'Yay!';
+  message.textContent = 'YAAAYYYYYYYYYYYYY!  :)';
   confettiSound.play();
 
   // Heart confetti
