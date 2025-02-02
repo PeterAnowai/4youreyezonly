@@ -7,7 +7,7 @@ const confettiSound = document.getElementById('confetti-sound');
 
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL   = 'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif';
+const SAD_GIF_URL = 'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.gif';
 
 // Messages for the NO button
 const noMessages = [
@@ -20,7 +20,7 @@ let currentMessageIndex = 0;
   We want 3 runaways. After the 3rd, the button stays still for a click.
   Once clicked, it IMMEDIATELY moves again (kicking off a new cycle).
 */
-let timesMoved = 0;  // tracks runaways per cycle
+let timesMoved = 0; // tracks runaways per cycle
 
 // Keep track of the current background color
 let backgroundColor = '#ffebee';
@@ -146,4 +146,10 @@ function moveNoButton() {
 
   noBtn.style.left = `${safeX}px`;
   noBtn.style.top = `${safeY}px`;
+
+  // Temporarily disable pointer events to reset the hover state
+  noBtn.style.pointerEvents = 'none';
+  setTimeout(() => {
+    noBtn.style.pointerEvents = 'auto';
+  }, 10);
 }
