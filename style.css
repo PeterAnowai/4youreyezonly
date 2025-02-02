@@ -98,23 +98,23 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px; /* Far from the center container */
-  width: 600px;
-  height: 200px;
-  background-color: #f3f3f3; /* Slight background so we can see the area */
-  overflow: hidden;          /* Hide letters if they go outside */
+  left: 600px;     /* Far from the center container */
+  width: 300px;    /* Smaller width */
+  height: 120px;   /* Smaller height */
+  background-color: #f3f3f3;
+  overflow: hidden;
   border: 1px solid #ccc;
   padding: 10px;
   box-sizing: border-box;
-  user-select: none;    /* Prevent text selection highlights */
+  user-select: none;
   z-index: 2;
-  cursor: default;      /* Not clickable, but we do hover */
+  cursor: default;
 }
 
-/* We'll style each letter as an absolute element inside #scrambled-container */
+/* Each scrambled letter: absolute position + transition for animation */
 .scrambled-letter {
   position: absolute;
-  transition: transform 2s ease; /* 2-second move animation */
+  transition: transform 2s ease;
   font-weight: bold;
   font-size: 20px;
   color: #333;
@@ -139,8 +139,8 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 300px;
-    height: 150px;
+    width: 200px;    /* Even smaller on mobile */
+    height: 100px;   /* Even smaller on mobile */
     font-size: 16px;
   }
 }
