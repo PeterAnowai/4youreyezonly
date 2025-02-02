@@ -69,8 +69,8 @@ yesBtn.addEventListener('click', () => {
   document.body.style.backgroundColor = 'hotpink';
   setTimeout(() => document.body.style.transition = '', 2000);
 
-  // Updated happy GIF URL
-  gifContainer.innerHTML = `<img src="https://media.tenor.com/5DSfqbYz1J0AAAAC/milk-and-mocha-happy.gif" alt="Happy GIF">`;
+  // CORRECTED HAPPY GIF URL
+  gifContainer.innerHTML = `<img src="https://media.tenor.com/5DSfqbYz1J0AAAAC/milk-and-mocha.gif" alt="Happy GIF">`;
 });
 
 // No button handler
@@ -79,7 +79,7 @@ noBtn.addEventListener('click', () => {
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
   darkenBackground();
 
-  // Updated sad GIF URL
-  gifContainer.innerHTML = `<img src="https://media.tenor.com/4tDzD4jD2aAAAAAC/milk-and-mocha-crying.gif" alt="Sad GIF">`;
+  // CORRECTED SAD GIF URL
+  gifContainer.innerHTML = `<img src="https://media.tenor.com/4tDzD4jD2aAAAAAC/milk-and-mocha.gif" alt="Sad GIF">`;
   setTimeout(() => message.textContent = '', 2000);
 });
