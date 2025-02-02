@@ -1,4 +1,4 @@
-/* Use full viewport, no scrollbars */
+/* Make the HTML & body occupy full viewport; no scrollbars */
 html, body {
     margin: 0;
     padding: 0;
@@ -8,6 +8,7 @@ html, body {
     font-family: Arial, sans-serif;
   }
   
+  /* Center content on the page */
   body {
     display: flex;
     justify-content: center;
@@ -35,7 +36,7 @@ html, body {
     position: relative;
   }
   
-  /* Basic button styles */
+  /* Generic button styles */
   button {
     padding: 10px 20px;
     margin: 0 10px;
@@ -49,22 +50,21 @@ html, body {
   button:hover {
     transform: scale(1.05);
   }
-  
   button:active {
     transform: scale(0.95);
   }
   
-  /* Yes button styling */
+  /* YES button style */
   #yes-btn {
     background-color: #4caf50;
     color: white;
   }
   
-  /* No button: positioned so it can move around the viewport */
+  /* NO button style */
   #no-btn {
     background-color: #f44336;
     color: white;
-    position: fixed;
+    position: fixed; /* allow free movement in the viewport */
     top: 50%;
     left: 50%;
     transition: left 0.5s ease, top 0.5s ease;
@@ -81,6 +81,7 @@ html, body {
     margin-top: 20px;
   }
   
+  /* Fade in the GIFs */
   #gif-container img {
     max-width: 100%;
     height: auto;
