@@ -1,7 +1,9 @@
-/****************************
- * Attempt to start the background music
- * on the first user interaction.
- ****************************/
+/*******************************************************
+ * Start background music on the first user interaction
+ *******************************************************/
+document.addEventListener('click', startBgMusic);
+document.addEventListener('touchstart', startBgMusic);
+
 function startBgMusic() {
   console.log("User interaction received, trying to start background music.");
   const bgMusic = document.getElementById('bg-music');
@@ -16,13 +18,10 @@ function startBgMusic() {
   document.removeEventListener('click', startBgMusic);
   document.removeEventListener('touchstart', startBgMusic);
 }
-// Listen for both click and touch events
-document.addEventListener('click', startBgMusic);
-document.addEventListener('touchstart', startBgMusic);
 
-/****************************
+/*******************************************************
  * Grab relevant DOM elements
- ****************************/
+ *******************************************************/
 const yesBtn = document.getElementById('yes-btn');
 const noBtn = document.getElementById('no-btn');
 const message = document.getElementById('message');
@@ -40,19 +39,13 @@ const noMessages = [
 ];
 let currentMessageIndex = 0;
 
-/*
-  We want 3 runaways. After the 3rd, the button stays still for a click.
-  Once clicked, it IMMEDIATELY moves again (kicking off a new cycle).
-*/
-let timesMoved = 0; // tracks runaways per cycle
-
 // Keep track of the current background color
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
-/****************************
+/*******************************************************
  * YES BUTTON
- ****************************/
+ *******************************************************/
 yesBtn.addEventListener('click', () => {
   message.textContent = 'Yay!';
   confettiSound.play();
@@ -95,27 +88,16 @@ yesBtn.addEventListener('click', () => {
   `;
 });
 
-/****************************
+/*******************************************************
  * NO BUTTON
- ****************************/
+ *******************************************************/
 
 /**
- * On pointerenter:
- *  1) If timesMoved < 3, switch to fixed position (if not already), then move.
+ * When "No" is clicked:
+ *  - Show the "Wrong answer" message for 5 seconds.
+ *  - During these 5 seconds, move the button every 600ms.
+ *  - After 5 seconds, clear the message and stop moving.
  */
-noBtn.addEventListener('pointerenter', () => {
-  if (timesMoved < 3) {
-    // Switch the noBtn to fixed position if not already
-    noBtn.style.position = 'fixed';
-    noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
-    noBtn.style.zIndex = '0'; // keep it behind container unless we want otherwise
-
-    moveNoButton();
-    timesMoved++;
-  }
-});
-
-// When "No" is clicked...
 noBtn.addEventListener('click', () => {
   // Display one of the "No" messages
   message.textContent = noMessages[currentMessageIndex];
@@ -132,25 +114,27 @@ noBtn.addEventListener('click', () => {
     >
   `;
 
-  // Clear message after 4 seconds
-  setTimeout(() => {
-    message.textContent = '';
-  }, 4000);
-
-  // Reset runaways (start new cycle)
-  timesMoved = 0;
-
-  // Immediately move again after being clicked
-  // Ensure button is in fixed position
+  // Switch to fixed positioning so we can move it anywhere
   noBtn.style.position = 'fixed';
   noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
 
+  // Start moving immediately
   moveNoButton();
-  timesMoved = 1; // This counts as the first move of the new cycle
+
+  // Keep moving the button periodically for the next 5 seconds
+  const movementInterval = setInterval(() => {
+    moveNoButton();
+  }, 600);
+
+  // Clear the message (and stop movement) after 5 seconds
+  setTimeout(() => {
+    message.textContent = '';
+    clearInterval(movementInterval);
+  }, 5000);
 });
 
-/**
- * Darken the background color by 20 each time "No" is clicked
+/** 
+ * Darken the background color by 20 each time "No" is clicked 
  */
 function darkenBackground() {
   let r = parseInt(backgroundColor.slice(1, 3), 16);
@@ -167,11 +151,10 @@ function darkenBackground() {
   document.body.style.backgroundColor = backgroundColor;
 }
 
-/***********************************
- * Moves the NO button to a random position
- * in the viewport WITHOUT overlapping
- * the container.
- ***********************************/
+/*******************************************************
+ * Moves the NO button to a random position 
+ * in the viewport WITHOUT overlapping the container.
+ *******************************************************/
 function moveNoButton() {
   const buttonWidth = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
@@ -213,8 +196,8 @@ function moveNoButton() {
   }, 10);
 }
 
-/**
- * Helper function to detect overlap between
+/** 
+ * Helper function: detect overlap between
  * the NO button and the container.
  */
 function doesOverlap(x, y, width, height, containerRect) {
@@ -230,7 +213,7 @@ function doesOverlap(x, y, width, height, containerRect) {
   const containerTop    = containerRect.top;
   const containerBottom = containerRect.top + containerRect.height;
 
-  // Overlap occurs if horizontally overlapping AND vertically overlapping
+  // Overlap occurs if horizontally AND vertically intersecting
   const overlapHoriz = (buttonLeft < containerRight) && (buttonRight > containerLeft);
   const overlapVert  = (buttonTop < containerBottom) && (buttonBottom > containerTop);
 
