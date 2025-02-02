@@ -1,16 +1,23 @@
-/* 
- * Unmute and start background music on the first user interaction.
- * This approach ensures that the music starts once the user clicks anywhere.
- */
-function startBgMusic() {
+// Attempt to start the background music on first user interaction.
+function startBgMusic(e) {
+  console.log("User interaction received, trying to start background music.");
   const bgMusic = document.getElementById('bg-music');
-  bgMusic.muted = false;
-  bgMusic.play().catch(error => {
-    console.error("Background music couldn't play:", error);
-  });
+  if (bgMusic) {
+    bgMusic.muted = false;
+    bgMusic.play().then(() => {
+      console.log("Background music playing!");
+    }).catch(error => {
+      console.error("Background music couldn't play:", error);
+    });
+  }
+  // Remove both listeners after the first interaction.
   document.removeEventListener('click', startBgMusic);
+  document.removeEventListener('touchstart', startBgMusic);
 }
+
+// Listen for both click and touch events.
 document.addEventListener('click', startBgMusic);
+document.addEventListener('touchstart', startBgMusic);
 
 // Grab relevant DOM elements
 const yesBtn = document.getElementById('yes-btn');
