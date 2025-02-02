@@ -13,11 +13,12 @@ let currentMessageIndex = 0;
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
-// Make "No" button slide to a new position
+// Make "No" button slide smoothly to a new position
 noBtn.addEventListener('mouseover', () => {
   const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
   const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
 
+  // Apply smooth transition
   noBtn.style.transition = 'left 0.5s ease, top 0.5s ease';
   noBtn.style.position = 'absolute';
   noBtn.style.left = `${x}px`;
