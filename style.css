@@ -50,7 +50,6 @@ button {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-
 button:hover {
   transform: scale(1.05);
 }
@@ -68,7 +67,6 @@ button:active {
 #no-btn {
   background-color: #f44336;
   color: white;
-  /* Initially in normal flow so it aligns with the Yes button */
 }
 
 #message {
@@ -96,6 +94,19 @@ button:active {
   to   { opacity: 1; }
 }
 
+/* The scrambled text container, placed off to the side */
+#scrambled-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: default; /* Not clickable, but we can hover */
+  user-select: none; /* (Optional) prevent text selection highlights */
+  z-index: 2; /* Above the background but behind the main container if needed */
+  color: #333;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
   .container {
@@ -110,5 +121,11 @@ button:active {
   button {
     font-size: 14px;
     padding: 8px 16px;
+  }
+
+  #scrambled-container {
+    top: 10px;
+    left: 10px;
+    font-size: 16px;
   }
 }

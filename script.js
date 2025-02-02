@@ -28,6 +28,9 @@ const message = document.getElementById('message');
 const gifContainer = document.getElementById('gif-container');
 const confettiSound = document.getElementById('confetti-sound');
 
+// Scrambled text container
+const scrambledContainer = document.getElementById('scrambled-container');
+
 /* Replace Tenor URLs with reliable Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
 const SAD_GIF_URL = 'https://media3.giphy.com/media/95W4wv8nnb9K/giphy.gif'; // Sad Mocha Bear GIF
@@ -47,7 +50,7 @@ document.body.style.backgroundColor = backgroundColor;
  * YES BUTTON
  *******************************************************/
 yesBtn.addEventListener('click', () => {
-  message.textContent = 'YAAAYYYYYYYYYYYYY!  :)';
+  message.textContent = 'Yay!';
   confettiSound.play();
 
   // Heart confetti
@@ -91,13 +94,6 @@ yesBtn.addEventListener('click', () => {
 /*******************************************************
  * NO BUTTON
  *******************************************************/
-
-/**
- * When "No" is clicked:
- *  - Show the "Wrong answer" message for 5 seconds.
- *  - During these 5 seconds, move the button every 600ms.
- *  - After 5 seconds, clear the message and stop moving.
- */
 noBtn.addEventListener('click', () => {
   // Display one of the "No" messages
   message.textContent = noMessages[currentMessageIndex];
@@ -218,4 +214,80 @@ function doesOverlap(x, y, width, height, containerRect) {
   const overlapVert  = (buttonTop < containerBottom) && (buttonBottom > containerTop);
 
   return overlapHoriz && overlapVert;
+}
+
+/*******************************************************
+ * SCRAMBLED TEXT LOGIC
+ * 1) Generate scrambled text of "you are beautiful"
+ * 2) Place in #scrambled-container
+ * 3) On hover, unscramble over 2 seconds
+ *******************************************************/
+const originalText = "you are beautiful";
+const scrambledText = scrambleString(originalText); // Build a scrambled version
+scrambledContainer.textContent = scrambledText;
+
+// When user hovers on the scrambled container, unscramble over 2 seconds
+scrambledContainer.addEventListener('pointerenter', () => {
+  unscrambleOverTime(scrambledText, originalText, 2000);
+}, { once: true }); 
+// `{ once: true }` ensures it unscrambles only on the FIRST hover.
+// Remove this if you want it to unscramble every time you hover.
+
+/**
+ * Creates a scrambled version of a given string 
+ * by shuffling all the letters randomly.
+ */
+function scrambleString(str) {
+  // Convert to array of characters
+  const arr = str.split("");
+  // Fisher-Yates shuffle
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.join("");
+}
+
+/**
+ * Unscramble the scrambled text to the original text over `duration` ms
+ * in a smooth, step-by-step animation.
+ */
+function unscrambleOverTime(scrambled, target, duration) {
+  const steps = 20; // how many animation steps
+  const stepTime = duration / steps; // time per step (ms)
+  let current = scrambled.split("");
+
+  let currentStep = 0;
+  const intervalId = setInterval(() => {
+    currentStep++;
+    // Each step, for each character, we randomly decide 
+    // to replace it with the correct letter or not.
+    for (let i = 0; i < current.length; i++) {
+      // We'll "lock in" correct characters more and more as we approach the final step
+      const progress = currentStep / steps; // from 0.0 to 1.0
+      // Decide randomly whether to place correct char or keep random char
+      if (Math.random() < progress) {
+        current[i] = target[i];
+      } else {
+        // Keep or re-scramble
+        current[i] = getRandomChar();
+      }
+    }
+    scrambledContainer.textContent = current.join("");
+
+    // Final step: set the text to the exact target
+    if (currentStep === steps) {
+      clearInterval(intervalId);
+      scrambledContainer.textContent = target;
+    }
+  }, stepTime);
+}
+
+/**
+ * Return a random character from A-Z or a space
+ * to emulate "scrambled" letters during unscrambling.
+ */
+function getRandomChar() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
+  return chars.charAt(Math.floor(Math.random() * chars.length));
 }
