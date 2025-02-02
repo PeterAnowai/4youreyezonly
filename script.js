@@ -12,14 +12,20 @@ const noMessages = [
 ];
 let currentMessageIndex = 0;
 
-// Track how many times the button has moved *this cycle*
-let movesSinceLastClickAllowed = 0;
+/*
+  We want to let the No button run away EXACTLY 3 times,
+  then let the user click it.
+  Once it's clicked, we want to repeat the pattern.
+*/
 
-// Initial background color
+// How many times has the No button moved this cycle?
+let timesMoved = 0;
+
+// Keep track of our current background color
 let backgroundColor = '#ffebee';
 document.body.style.backgroundColor = backgroundColor;
 
-/** YES BUTTON **/
+/** ===== YES BUTTON ===== */
 yesBtn.addEventListener('click', () => {
   message.textContent = 'Yay!';
   confettiSound.play();
@@ -62,21 +68,28 @@ yesBtn.addEventListener('click', () => {
   `;
 });
 
-/** NO BUTTON **/
+/** ===== NO BUTTON ===== */
+
 /**
- * We use 'pointerenter' so we only fire once each time
- * the mouse (or touch) enters the button area.
+ * Instead of "mouseover", we use "pointerenter" to ensure
+ * it only fires *once* each time the pointer enters the button.
  */
 noBtn.addEventListener('pointerenter', () => {
-  // The button runs away only if it hasn't moved 3 times yet
-  if (movesSinceLastClickAllowed < 3) {
+  /*
+    If we haven't moved the button 3 times yet,
+    move it and increment timesMoved.
+    If it's already moved 3 times, do nothing
+    so the user can click it.
+  */
+  if (timesMoved < 3) {
     moveNoButton();
-    movesSinceLastClickAllowed++;
+    timesMoved++;
   }
 });
 
-// Clicking "No" triggers the "Wrong answer" logic
+// Clicking "No" => show messages, reset timesMoved, repeat
 noBtn.addEventListener('click', () => {
+  // Show "No" message
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
 
@@ -91,34 +104,34 @@ noBtn.addEventListener('click', () => {
     >
   `;
 
-  // Clear message after 2 seconds
+  // Clear the message after 2 seconds
   setTimeout(() => {
     message.textContent = '';
   }, 2000);
 
-  // Reset so next time, it can run away 3 more times if you want that cycle repeated
-  movesSinceLastClickAllowed = 0;
+  // After clicking "No", reset timesMoved = 0,
+  // so next time we can move 3 times again.
+  timesMoved = 0;
 });
 
-/** Darkens the background each time "No" is clicked */
+/** Darkens the background color each time "No" is clicked */
 function darkenBackground() {
   let r = parseInt(backgroundColor.slice(1, 3), 16);
   let g = parseInt(backgroundColor.slice(3, 5), 16);
   let b = parseInt(backgroundColor.slice(5, 7), 16);
 
-  // Subtract 20 from each channel, bottoming out at 0
   r = Math.max(r - 20, 0);
   g = Math.max(g - 20, 0);
   b = Math.max(b - 20, 0);
 
+  // Convert back to hex
   backgroundColor = `#${r.toString(16).padStart(2, '0')}`
                   + `${g.toString(16).padStart(2, '0')}`
                   + `${b.toString(16).padStart(2, '0')}`;
-
   document.body.style.backgroundColor = backgroundColor;
 }
 
-/** Moves the "No" button to a random position within the screen */
+/** Moves the "No" button to a random position on screen */
 function moveNoButton() {
   const buttonWidth = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
@@ -127,14 +140,15 @@ function moveNoButton() {
   const maxX = window.innerWidth - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  // Random new position
+  // Generate random positions
   const newX = Math.random() * maxX;
   const newY = Math.random() * maxY;
 
-  // Optional clamp if needed
+  // Apply safe clamping if needed
   const safeX = Math.min(Math.max(newX, 0), maxX);
   const safeY = Math.min(Math.max(newY, 0), maxY);
 
+  // Update button location
   noBtn.style.left = `${safeX}px`;
   noBtn.style.top = `${safeY}px`;
 }

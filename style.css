@@ -1,23 +1,21 @@
-/* Make the HTML and body occupy the full viewport with no scrollbars */
+/* Use the full viewport without scrollbars */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevent scrollbars on most screens */
+    overflow: hidden;
     font-family: Arial, sans-serif;
   }
   
-  /* Center content with a background color */
   body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffebee; /* Your initial background color */
+    background-color: #ffebee;
     transition: background-color 0.3s ease;
   }
   
-  /* Container to hold the main content */
   .container {
     background-color: white;
     padding: 20px;
@@ -25,25 +23,19 @@ html, body {
     max-width: 90%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    /* If your container might grow large, use internal scrolling:
-       max-height: 80vh;
-       overflow: auto;
-    */
   }
   
-  /* Heading style */
   h1 {
     color: #d32f2f;
     margin: 0 0 20px 0;
   }
   
-  /* Buttons container */
   .buttons {
     margin-top: 20px;
     position: relative;
   }
   
-  /* Generic button styling */
+  /* Basic button styles */
   button {
     padding: 10px 20px;
     margin: 0 10px;
@@ -62,16 +54,13 @@ html, body {
     transform: scale(0.95);
   }
   
-  /* "Yes" button styling */
+  /* Yes button styling */
   #yes-btn {
     background-color: #4caf50;
     color: white;
   }
   
-  /* "No" button styling:
-     - position: fixed to move relative to the viewport
-     - transitions for smooth movement
-  */
+  /* No button: position it fixed so we can move it around the viewport */
   #no-btn {
     background-color: #f44336;
     color: white;
@@ -81,20 +70,19 @@ html, body {
     transition: left 0.5s ease, top 0.5s ease;
   }
   
-  /* Message display */
+  /* Message styling */
   #message {
     margin: 20px 0;
     font-size: 20px;
     color: #d32f2f;
-    min-height: 24px; /* Reserve space so the layout doesn’t jump */
+    min-height: 24px;
   }
   
-  /* GIF container */
+  /* GIF container with fade-in animation */
   #gif-container {
     margin-top: 20px;
   }
   
-  /* Fade-in animation for GIFs */
   #gif-container img {
     max-width: 100%;
     height: auto;
