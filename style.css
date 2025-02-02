@@ -24,7 +24,7 @@ body {
   max-width: 90%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
-  position: relative; /* Ensures container is layered above floating elements */
+  position: relative;
   z-index: 1;
 }
 
@@ -94,27 +94,28 @@ button:active {
   to   { opacity: 1; }
 }
 
-/* The scrambled text container, placed far to the side */
+/* The scrambled text container, placed off to the side */
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;     /* Far from the center container */
-  width: 300px;    /* Smaller width */
-  height: 120px;   /* Smaller height */
+  left: 600px;  /* Far from the main container */
+  width: 380px; /* Enough to fit "you are beautiful" on one line */
+  height: 60px; /* Just tall enough for one line of text */
   background-color: #f3f3f3;
-  overflow: hidden;
   border: 1px solid #ccc;
   padding: 10px;
   box-sizing: border-box;
   user-select: none;
   z-index: 2;
   cursor: default;
+  /* No overflow: hidden or scroll. We want the text to fit exactly. */
+  overflow: hidden;
 }
 
 /* Each scrambled letter: absolute position + transition for animation */
 .scrambled-letter {
   position: absolute;
-  transition: transform 2s ease;
+  transition: transform 2s ease; /* so letters move visibly */
   font-weight: bold;
   font-size: 20px;
   color: #333;
@@ -139,8 +140,8 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 200px;    /* Even smaller on mobile */
-    height: 100px;   /* Even smaller on mobile */
+    width: 280px;  /* Slightly smaller on mobile */
+    height: 50px;  
     font-size: 16px;
   }
 }
