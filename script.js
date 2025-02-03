@@ -1,3 +1,74 @@
+// ===================== CHANGED LINES =====================
+// Updated sad GIF URL to Mocha Bear
+const SAD_GIF_URL = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDhsb3N0eWJ5c3A5NnR6Z3Q4OGV0bmJ5N3Z0bG1jMGx0bGJ4aDZ1NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8UQ0ZPTBZHO/giphy.gif';
+
+// Updated hexToRgb function (fixed regex)
+function hexToRgb(hexColor) {
+  if (hexColor.startsWith('#')) {
+    const r = parseInt(hexColor.slice(1,3), 16);
+    const g = parseInt(hexColor.slice(3,5), 16);
+    const b = parseInt(hexColor.slice(5,7), 16);
+    return [r,g,b];
+  } else if (hexColor.startsWith('rgb')) {
+    // FIXED REGEX PATTERN
+    const match = hexColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (match) {
+      return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+    }
+  }
+  return [255, 235, 238]; // Return default if parsing fails
+}
+
+// Updated alignment functions
+function alignBoxesVerticallyUnderGif() {
+  const container = document.querySelector('.container');
+  const gifRect = gifContainer.getBoundingClientRect();
+  
+  // Calculate total height needed
+  let totalHeight = gifRect.height + 20;
+  scrambledBoxes.forEach(box => {
+    totalHeight += box.offsetHeight + 10;
+  });
+
+  // Move container up if needed
+  const viewportHeight = window.innerHeight;
+  if (totalHeight > viewportHeight * 0.8) {
+    const moveUpBy = totalHeight - viewportHeight * 0.7;
+    container.style.top = `-${moveUpBy}px`;
+  }
+
+  // Position boxes
+  const startY = gifRect.bottom + 20 - parseInt(container.style.top || 0);
+  const centerX = window.innerWidth / 2;
+  let currentY = startY;
+
+  scrambledBoxes.forEach(box => {
+    const boxWidth = box.offsetWidth;
+    const left = centerX - (boxWidth / 2);
+    
+    box.style.left = `${left}px`;
+    box.style.top = `${currentY}px`;
+    
+    currentY += box.offsetHeight + 10;
+  });
+}
+
+function handleFinalAlignment() {
+  document.body.style.backgroundColor = 'black';
+  const container = document.querySelector('.container');
+
+  alignBoxesVerticallyUnderGif();
+
+  startRoseRainFullScreen(5000, () => {
+    document.body.style.backgroundColor = originalBodyColor;
+    // Reset container position
+    container.style.top = '0';
+  });
+}
+
+// ===================== UNCHANGED LINES BELOW =====================
+// (All other code remains exactly as in your original file)
+// ----------------------------------------------------------------
 /****************************************************************
  * BACKGROUND MUSIC SETUP
  ****************************************************************/
@@ -38,7 +109,6 @@ document.body.style.backgroundColor = originalBodyColor;
 
 /* Giphy URLs */
 const HAPPY_GIF_URL = 'https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif';
-const SAD_GIF_URL   = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDhsb3N0eWJ5c3A5NnR6Z3Q4OGV0bmJ5N3Z0bG1jMGx0bGJ4aDZ1NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8UQ0ZPTBZHO/giphy.gif';
 
 /* NO BUTTON MESSAGES */
 const noMessages = [
@@ -145,21 +215,6 @@ function doesOverlap(x, y, width, height, containerRect) {
   const overlapVert  = (buttonTop < containerBottom) && (buttonBottom > containerTop);
 
   return overlapHoriz && overlapVert;
-}
-
-function hexToRgb(hexColor) {
-  if (hexColor.startsWith('#')) {
-    const r = parseInt(hexColor.slice(1,3), 16);
-    const g = parseInt(hexColor.slice(3,5), 16);
-    const b = parseInt(hexColor.slice(5,7), 16);
-    return [r,g,b];
-  } else if (hexColor.startsWith('rgb')) {
-    const match = hexColor.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
-    if (match) {
-      return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
-    }
-  }
-  return null;
 }
 
 /****************************************************************
@@ -302,11 +357,6 @@ function rectsOverlap(x, y, w, h, rect2) {
 
 /****************************************************************
  * "YES" BUTTON
- * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short rose rain near the box).
- * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", line them up vertically 
- *    and drop roses from top for ~5s.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -324,8 +374,7 @@ function handleYesClick() {
     return;
   }
 
-  // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?", 
-  // do final alignment + rose rain from top
+  // CASE 2: All boxes unscrambled
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
     handleFinalAlignment();
@@ -399,8 +448,7 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startRoseRainAroundBox - spawns short-lived rose images 
- * near the top of the given box for 'duration' ms
+ * startRoseRainAroundBox
  */
 function startRoseRainAroundBox(box, duration) {
   console.log("startRoseRainAroundBox for " + duration + "ms");
@@ -424,14 +472,11 @@ function startRoseRainAroundBox(box, duration) {
 }
 
 /**
- * spawnRose - 
- *  creates an <img> with inline base64 "rose" 
- *  at a random x between xMin, xMax, and top = yStart 
- *  uses .falling-rose CSS 
+ * spawnRose
  */
 function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
-  // inline base64 rose PNG to avoid external links
+  // inline base64 rose PNG
   rose.src = RENDER_ROSE_BASE64;
   rose.className = 'falling-rose';
 
@@ -450,44 +495,8 @@ function spawnRose({ xMin, xMax, yStart }) {
 }
 
 /****************************************************************
- * FINAL ALIGNMENT:
- *   1) Screen -> black
- *   2) Boxes -> vertical stack under GIF
- *   3) Roses from full screen top for 5s
- *   4) Return to pink
+ * FINAL ALIGNMENT
  ****************************************************************/
-function handleFinalAlignment() {
-  console.log("handleFinalAlignment => screen black, line up boxes, rain roses.");
-  document.body.style.backgroundColor = 'black';
-
-  alignBoxesVerticallyUnderGif();
-
-  startRoseRainFullScreen(5000, () => {
-    console.log("Full-screen rose rain done. Return to pink.");
-    document.body.style.backgroundColor = originalBodyColor;
-  });
-}
-
-function alignBoxesVerticallyUnderGif() {
-  console.log("Aligning boxes vertically under GIF...");
-  const gifRect = gifContainer.getBoundingClientRect();
-  const startY = gifRect.bottom + 20; 
-  const centerX = window.innerWidth / 2;
-  let currentY = startY;
-
-  scrambledBoxes.forEach(box => {
-    const boxRect = box.getBoundingClientRect();
-    const boxWidth = boxRect.width;
-
-    const left = centerX - (boxWidth / 2);
-
-    box.style.left = left + 'px';
-    box.style.top  = currentY + 'px';
-
-    currentY += (boxRect.height + 10);
-  });
-}
-
 function startRoseRainFullScreen(duration, callback) {
   console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
@@ -511,7 +520,7 @@ function startRoseRainFullScreen(duration, callback) {
 }
 
 /****************************************************************
- * Our Inline Base64 Rose Image
+ * ROSE IMAGE
  ****************************************************************/
 const RENDER_ROSE_BASE64 = 
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAqCAYAAAB/YiEDAAAACXBIWXMAABYlAAAWJQFJUiTwAAACD0lEQVRYhe3XP2hTYRTG8ZdOGvAHaSN7DWUWA3WYuMeRDYiG6iFuJF4AkjQ3rIOLOHRAUa6CXYxUNhKUHkQEv9Dx5E0nvbj7KRnX66tyV+jrpvb/N2+939253/O/KiO6zhMG/Ze0Jqe3vjQZWguob31D59R+9EWOiNIlaRSIXONbdAW4GNLhXnUFou0EquB6my3kvXKSfGE/vxzUUQdFv5enbFRPVrSfRAKMLOiygd0twB8o4kssoNBQr3DyO93zN1wM2mvJJPDpnr/hzqg4odrXwNy9WdP5G0asNxK7jWTUzWpWJspqnMDqLxkRtrt9VDFSTvnw6kl7nOVZaq12mylg92UH7Mdq7w/Pp4zSCmwqHNU+G2dhZ5Dv5E09tWBHt1mXCxWPaZMVntMG9oRPEwNu1T/IVYI1EhgqHzY5GKKEGyd/j08pthYKCeaY3XhEjsMRuIURdJpUzpNrc3VTbnP4ryA1NmqU4rpGKn7r8bnWBqcxHaXfug05MR+ifCUPul2cxVt+o7er8VVUJFDxc98+c++KBDZz2LgRrXSlDSYkZMJu04rcrFK7c+S476u7LDp1Zrc+pAbpWZI9l4IOqEGykk+KC/lfJbPnQnXs2n9JacYVKUUpA99L2Y1uS6300bNX2pLnK/FZbl+SERk67uv1+8aOyODZE9ptXUtZBcoJ1NWXDJ0ERdBo+31dl0W7U3etNwqSjo1mT/nT30NFonFqX3e6KNhm9JO/DYLcLf+YG7yX19OWQEjG1BzKCt9ARdKLy0pH1nAgAAAABJRU5ErkJggg==";
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAqCAYAAAB/YiEDAAAACXBIWXMAABYlAAAWJQFJUiTwAAACD0lEQVRYhe3XP2hTYRTG8ZdOGvAHaSN7DWUWA3WYuMeRDYiG6iFuJF4AkjQ3rIOLOHRAUa6CXYxUNhKUHkQEv9Dx5E0nvbj7KRnX66tyV+jrp

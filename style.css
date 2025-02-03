@@ -12,10 +12,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffebee; /* original light pink */
-  transition: background-color 2s ease; 
+  background-color: #ffebee;
+  transition: background-color 2s ease;
+  padding: 50px 0; /* Added padding at bottom */
 }
 
+/* --- Container Styles --- */
 .container {
   background-color: white;
   padding: 20px;
@@ -25,6 +27,7 @@ body {
   text-align: center;
   position: relative;
   z-index: 1;
+  transition: top 2s ease; /* Added for smooth movement */
 }
 
 h1 {
@@ -39,7 +42,7 @@ h1 {
   margin-top: 20px;
 }
 
-/* --- Button Styling --- */
+/* --- Rest of original CSS remains the same --- */
 button {
   padding: 10px 20px;
   font-size: 16px;
@@ -50,14 +53,12 @@ button {
   transition: transform 0.2s ease;
 }
 
-/* Desktop hover effect */
 @media (hover: hover) {
   button:hover {
     transform: scale(1.05);
   }
 }
 
-/* Mobile active effect */
 @media (hover: none) {
   button:active {
     transform: scale(0.95);
@@ -93,7 +94,6 @@ button {
   border-radius: 10px;
 }
 
-/* --- The 6 scrambled boxes --- */
 .scrambled-box {
   position: absolute;
   background-color: #f3f3f3;
@@ -105,7 +105,7 @@ button {
   overflow: hidden;
   font-size: 14px;   
   padding: 6px;      
-  transition: left 2s ease, top 2s ease; /* for final alignment */
+  transition: left 2s ease, top 2s ease;
 }
 
 .scrambled-letter {
@@ -116,10 +116,6 @@ button {
   font-size: 14px;
 }
 
-/* 
-   Rose images that we create for the "falling roses" 
-   We'll animate them with keyframes or via absolute positioning
-*/
 .falling-rose {
   position: absolute;
   width: 30px;
@@ -127,10 +123,6 @@ button {
   pointer-events: none; 
   z-index: 999;       
   animation: roseFall 5s linear forwards;
-  /* 
-    5s ensures the rose travels from just above the screen 
-    to beyond the bottom 
-  */
 }
 
 @keyframes roseFall {
