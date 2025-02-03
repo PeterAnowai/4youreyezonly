@@ -306,7 +306,8 @@ function scrambleTextIntoBox(sentence, box) {
  * "YES" BUTTON: 
  *   1) If not all boxes unscrambled, unscramble the next one. 
  *   2) If all boxes unscrambled and heading is "Will you be My Valentines?", 
- *      rearrange all boxes in a vertical stack beneath the GIF with confetti for ~5s
+ *      rearrange all boxes in a vertical stack beneath the GIF 
+ *      and have roses fall from the top for ~5s.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -344,10 +345,7 @@ function startUnscrambleProcess() {
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
-  // Fireworks around that box
-  startFireworksAroundBox(targetBox);
-
-  unscrambleBox(targetBox, () => {
+  unscrambleBoxWithRoses(targetBox, () => {
     document.body.style.backgroundColor = originalBodyColor;
 
     // If all unscrambled, update heading
@@ -364,12 +362,20 @@ function startUnscrambleProcess() {
   });
 }
 
-function unscrambleBox(box, onDone) {
+/**
+ * unscrambleBoxWithRoses:
+ *  - unscrambles the box
+ *  - simultaneously, show a quick "rose rain" around the box for 2.5s
+ */
+function unscrambleBoxWithRoses(box, onDone) {
   if (box.__isUnscrambled) {
     if (onDone) onDone();
     return;
   }
   box.__isUnscrambled = true;
+
+  // Start a short rose fall around the box for ~2.5s
+  startRoseRainAroundBox(box, 2500);
 
   const allLetters = box.__letters;
   const wordsCount = 1 + Math.max(...allLetters.map(l => l.wordIndex));
@@ -397,37 +403,61 @@ function unscrambleBox(box, onDone) {
   animateNextWord();
 }
 
-function startFireworksAroundBox(box) {
-  const rect = box.getBoundingClientRect();
-  const centerX = (rect.left + rect.right) / 2;
-  const centerY = (rect.top + rect.bottom) / 2;
-
-  // We'll shoot fireworks for 2.5 seconds
-  const endTime = Date.now() + 2500;
+/** 
+ *  Creates small rose images that "fall" around the targetBox
+ *  for the given duration (e.g., 2500ms).
+ */
+function startRoseRainAroundBox(box, duration) {
+  const endTime = Date.now() + duration;
+  const boxRect = box.getBoundingClientRect();
 
   (function frame() {
-    const timeLeft = endTime - Date.now();
-    if (timeLeft <= 0) return;
+    const now = Date.now();
+    if (now >= endTime) return;
 
-    confetti({
-      particleCount: 4,
-      angle: Math.random() * 360,
-      spread: 55,
-      origin: {
-        x: centerX / window.innerWidth,
-        y: centerY / window.innerHeight
-      }
+    // spawn a rose or two near the top of the box
+    spawnRose({
+      xRangeMin: boxRect.left,
+      xRangeMax: boxRect.right,
+      yStart: boxRect.top - 20
     });
 
     requestAnimationFrame(frame);
   })();
 }
 
+/**
+ * spawnRose:
+ * Creates a new rose <img> at a random x between xRangeMin and xRangeMax,
+ * sets its top to yStart, and applies the .falling-rose animation. 
+ * We'll remove it from the DOM after ~4s (the animation ends).
+ */
+function spawnRose({ xRangeMin, xRangeMax, yStart }) {
+  const rose = document.createElement('img');
+  rose.src = 'https://raw.githubusercontent.com/justadudewhohacks/flowers/main/rose.png';
+  rose.className = 'falling-rose';
+
+  // random x within that range
+  const xPos = Math.floor(Math.random() * (xRangeMax - xRangeMin)) + xRangeMin;
+  rose.style.left = xPos + 'px';
+  rose.style.top  = yStart + 'px';
+
+  // Insert into body
+  document.body.appendChild(rose);
+
+  // Remove after a few seconds (the duration of @keyframes roseFall)
+  setTimeout(() => {
+    if (rose.parentNode) {
+      rose.parentNode.removeChild(rose);
+    }
+  }, 4000);
+}
+
 /****************************************************************
  * FINAL ALIGNMENT:
  *  Screen -> black
  *  All boxes align vertically under the GIF container
- *  Confetti "falls" until 3s after they align ( ~5s total ) 
+ *  Roses fall from the top for ~5s
  *  Then background returns to pink
  ****************************************************************/
 function handleFinalAlignment() {
@@ -437,46 +467,21 @@ function handleFinalAlignment() {
   // 2) Align all boxes vertically beneath the GIF container
   alignBoxesVerticallyUnderGif();
 
-  // 3) Start confetti for ~5 seconds
-  const endTime = Date.now() + 5000;
-  let confettiInterval;
-  
-  (function continuousConfetti() {
-    const now = Date.now();
-    if (now >= endTime) {
-      // 4) After 5s, revert to pink
-      document.body.style.backgroundColor = originalBodyColor;
-      clearInterval(confettiInterval);
-      return;
-    }
-
-    confetti({
-      particleCount: 6,
-      angle: 90,
-      spread: 60,
-      startVelocity: 20,
-      origin: { x: 0.5, y: -0.01 } // "falling from top"
-    });
-
-    confettiInterval = requestAnimationFrame(continuousConfetti);
-  })();
+  // 3) Start rose fall from the top for ~5 seconds
+  startRoseRainFullScreen(5000, () => {
+    // 4) revert to pink
+    document.body.style.backgroundColor = originalBodyColor;
+  });
 }
 
 function alignBoxesVerticallyUnderGif() {
-  // We'll stack them under the GIF in the center of the page
   const gifRect = gifContainer.getBoundingClientRect();
-  
-  // Let's define a starting top position ~20px below the GIF
-  // and center the boxes horizontally
-  const startY = gifRect.bottom + 20;
+  const startY = gifRect.bottom + 20; 
   const centerX = window.innerWidth / 2;
 
-  // Each box is about 60px tall, let's do 10px gap
   let currentY = startY;
 
   scrambledBoxes.forEach(box => {
-    // transform from their current position to a new top/left
-    // We'll center them on centerX => left = centerX - (boxWidth/2)
     const boxRect = box.getBoundingClientRect();
     const boxWidth = boxRect.width;
 
@@ -487,4 +492,33 @@ function alignBoxesVerticallyUnderGif() {
 
     currentY += (boxRect.height + 10);
   });
+}
+
+/**
+ * startRoseRainFullScreen
+ *  - spawns roses from the top of the screen (full width) 
+ *    for the given 'duration' in ms
+ *  - once the duration ends, calls the callback
+ */
+function startRoseRainFullScreen(duration, callback) {
+  const endTime = Date.now() + duration;
+
+  (function frame() {
+    const now = Date.now();
+    if (now >= endTime) {
+      if (callback) callback();
+      return;
+    }
+
+    // spawn a few roses across the full screen width
+    for (let i = 0; i < 3; i++) {
+      spawnRose({
+        xRangeMin: 0,
+        xRangeMax: window.innerWidth,
+        yStart: -50
+      });
+    }
+
+    requestAnimationFrame(frame);
+  })();
 }

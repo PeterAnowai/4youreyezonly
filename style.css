@@ -119,19 +119,27 @@ button {
   font-size: 14px; /* smaller letters */
 }
 
-/* --- Responsive Adjustments --- */
-@media (max-width: 600px) {
-  .container {
-    width: 90%;
-    padding: 15px;
-  }
+/* 
+   Rose images that we create for the "falling roses" 
+   We'll animate them with a keyframes approach or JavaScript approach 
+*/
+.falling-rose {
+  position: absolute;
+  width: 30px;  /* approximate size for the rose */
+  height: 30px;
+  pointer-events: none; /* don't block clicks */
+  z-index: 999;         /* appear on top of everything */
+  animation: roseFall linear forwards;
+}
 
-  h1 {
-    font-size: 24px;
+/* We'll define a keyframes animation for falling down the screen */
+@keyframes roseFall {
+  0% {
+    transform: translateY(-50px) rotate(0deg);
+    opacity: 1;
   }
-
-  button {
-    font-size: 14px;
-    padding: 8px 16px;
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0.5;
   }
 }
