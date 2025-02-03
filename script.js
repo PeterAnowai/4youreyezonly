@@ -253,4 +253,32 @@ allLetters.forEach((obj) => {
 });
 
 // Once we've positioned everything, set container width/height in JS:
-scrambledContainer.style.width = (curren
+scrambledContainer.style.width = (currentX + 20) + 'px'; // small padding
+scrambledContainer.style.height = '60px'; // keep it tall enough for random Y
+
+/**
+ * On click, animate unscrambling: letters move to finalX/finalY, rotate to 0°, fade to 1.
+ */
+scrambledContainer.addEventListener('click', () => {
+  console.log("Scrambled container clicked.");
+  let currentWordIndex = 0;
+
+  function animateNextWord() {
+    if (currentWordIndex >= words.length) return;
+
+    // Move letters in this word to their final position
+    const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
+    wordLetters.forEach(letterObj => {
+      letterObj.span.style.transform =
+        `translate(${letterObj.finalX}px, ${letterObj.finalY}px) rotate(0deg)`;
+      letterObj.span.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+      currentWordIndex++;
+      animateNextWord();
+    }, 2000);
+  }
+
+  animateNextWord();
+}, { once: true });
