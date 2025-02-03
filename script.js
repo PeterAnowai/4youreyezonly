@@ -53,19 +53,19 @@ let currentMessageIndex = 0;
 noBtn.addEventListener('click', handleNoClick);
 
 function handleNoClick() {
-  // Display one of the "No" messages
+  console.log("No button clicked.");
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
 
   // Darken background slightly
   darkenBackground();
 
-  // Show sad GIF (fade in, then out)
+  // Show sad GIF
   gifContainer.innerHTML = `<img src="${SAD_GIF_URL}" alt="Sad Mocha Bear GIF">`;
-  gifContainer.style.opacity = 1; // fade in
+  gifContainer.style.opacity = 1; 
 
   setTimeout(() => {
-    gifContainer.style.opacity = 0; // fade out
+    gifContainer.style.opacity = 0; 
   }, 3000);
 
   // Switch to fixed for free movement
@@ -84,7 +84,6 @@ function handleNoClick() {
   setTimeout(() => {
     message.textContent = '';
     clearInterval(movementInterval);
-    // Return the No button to its original position
     resetNoButtonPosition();
   }, 5000);
 }
@@ -110,7 +109,6 @@ function moveNoButton() {
   const maxX = window.innerWidth  - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
-  // Avoid overlapping the main container
   const containerRect = document.querySelector('.container').getBoundingClientRect();
 
   let x, y;
@@ -128,7 +126,7 @@ function moveNoButton() {
 
   noBtn.style.left = `${x}px`;
   noBtn.style.top  = `${y}px`;
-  noBtn.style.pointerEvents = 'none'; // reset hover
+  noBtn.style.pointerEvents = 'none'; 
   setTimeout(() => { noBtn.style.pointerEvents = 'auto'; }, 10);
 }
 
@@ -179,17 +177,16 @@ const scrambledTexts = [
 let scrambledBoxes = [];
 let unscrambleIndex = 0; // which box unscrambles next
 
-// Create them on page load
 window.addEventListener('load', createAllScrambledBoxes);
 
 function createAllScrambledBoxes() {
+  console.log("Creating scrambled boxes...");
   const mainContainer = document.querySelector('.container');
 
   scrambledTexts.forEach(sentence => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
-    // Scramble first to measure how wide it should be
     scrambleTextIntoBox(sentence, box);
 
     const neededWidth = measureScrambledBoxWidth(box);
@@ -203,11 +200,56 @@ function createAllScrambledBoxes() {
   });
 }
 
+function scrambleTextIntoBox(sentence, box) {
+  const words = sentence.split(' ');
+  const allLetters = [];
+  
+  words.forEach((word, wIndex) => {
+    const letters = [...word];
+    if (wIndex < words.length - 1) letters.push(" ");
+    letters.forEach(char => {
+      allLetters.push({ char, wordIndex: wIndex });
+    });
+  });
+
+  let currentX = 10;
+  let currentY = 20;
+  const letterWidth = 10;
+  const wordSpacing = 5;
+
+  allLetters.forEach(obj => {
+    const span = document.createElement('span');
+    span.className = 'scrambled-letter';
+    span.textContent = obj.char;
+
+    // random initial position
+    const randX = Math.random() * 100;
+    const randY = Math.random() * 30;
+    const randomAngle = Math.random() * 60 - 30;
+    span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
+    span.style.opacity = '0.7';
+
+    obj.finalX = currentX;
+    obj.finalY = currentY;
+
+    currentX += letterWidth;
+    if (obj.char === " ") {
+      currentX += wordSpacing;
+    }
+
+    box.appendChild(span);
+    obj.span = span;
+  });
+
+  box.__letters = allLetters;
+  box.__isUnscrambled = false;
+}
+
 function measureScrambledBoxWidth(box) {
-  const allLetters = box.__letters;
-  if (!allLetters || allLetters.length === 0) return 200;
+  const allLetters = box.__letters || [];
+  if (!allLetters.length) return 200;
   const maxFinalX = Math.max(...allLetters.map(l => l.finalX));
-  return maxFinalX + 30; // margin
+  return maxFinalX + 30; 
 }
 
 function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
@@ -258,61 +300,18 @@ function rectsOverlap(x, y, w, h, rect2) {
   return overlapHoriz && overlapVert;
 }
 
-function scrambleTextIntoBox(sentence, box) {
-  const words = sentence.split(' ');
-  const allLetters = [];
-  
-  words.forEach((word, wIndex) => {
-    const letters = [...word];
-    if (wIndex < words.length - 1) letters.push(" ");
-    letters.forEach(char => {
-      allLetters.push({ char, wordIndex: wIndex });
-    });
-  });
-
-  let currentX = 10;
-  let currentY = 20;
-  const letterWidth = 10;
-  const wordSpacing = 5;
-
-  allLetters.forEach(obj => {
-    const span = document.createElement('span');
-    span.className = 'scrambled-letter';
-    span.textContent = obj.char;
-
-    const randX = Math.random() * 100;
-    const randY = Math.random() * 30;
-    const randomAngle = Math.random() * 60 - 30;
-    span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
-    span.style.opacity = '0.7';
-
-    obj.finalX = currentX;
-    obj.finalY = currentY;
-
-    currentX += letterWidth;
-    if (obj.char === " ") {
-      currentX += wordSpacing;
-    }
-
-    box.appendChild(span);
-    obj.span = span;
-  });
-
-  box.__letters = allLetters;
-  box.__isUnscrambled = false;
-}
-
 /****************************************************************
- * "YES" BUTTON: 
- *   1) If not all boxes unscrambled, unscramble the next one. 
- *   2) If all boxes unscrambled and heading is "Will you be My Valentines?", 
- *      rearrange all boxes in a vertical stack beneath the GIF 
- *      and have roses fall from the top for ~5s.
+ * "YES" BUTTON
+ * 1) If not all boxes unscrambled, unscramble the next one 
+ *    (with short rose rain near the box).
+ * 2) If all boxes unscrambled and heading is 
+ *    "Will you be My Valentines?", line them up vertically 
+ *    and drop roses from top for ~5s.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
 function handleYesClick() {
-  // Always play the "Hooray" sound
+  console.log("Yes button clicked.");
   confettiSound.currentTime = 0;
   confettiSound.play().catch(e => console.log(e));
 
@@ -320,53 +319,48 @@ function handleYesClick() {
 
   // CASE 1: Not all boxes unscrambled yet
   if (unscrambleIndex < scrambledBoxes.length) {
+    console.log(`Unscrambling box #${unscrambleIndex+1}`);
     startUnscrambleProcess();
     return;
   }
 
-  // CASE 2: All boxes unscrambled
-  // If heading is already "Will you be My Valentines?", we do the new alignment
+  // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?", 
+  // do final alignment + rose rain from top
   if (heading.textContent === "Will you be My Valentines?") {
+    console.log("Final alignment triggered.");
     handleFinalAlignment();
   }
 }
 
 function startUnscrambleProcess() {
-  // If we've unscrambled all 6 already, do nothing
   if (unscrambleIndex >= scrambledBoxes.length) return;
 
   const targetBox = scrambledBoxes[unscrambleIndex];
   unscrambleIndex++;
 
-  // Fade to black
   document.body.style.backgroundColor = 'black';
 
-  // Fade in happy GIF (if it's not already on)
+  // Make sure happy GIF is visible
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
   unscrambleBoxWithRoses(targetBox, () => {
+    // After unscramble
     document.body.style.backgroundColor = originalBodyColor;
 
     // If all unscrambled, update heading
     if (unscrambleIndex >= scrambledBoxes.length) {
       document.querySelector('h1').textContent = "Will you be My Valentines?";
-      // Keep the GIF on screen (don't fade out)
+      console.log("All boxes unscrambled! Heading updated.");
+      // Keep the GIF
     } else {
-      // Otherwise, fade out the GIF
+      // Hide the GIF until next unscramble
       gifContainer.style.opacity = 0;
-      setTimeout(() => {
-        gifContainer.innerHTML = '';
-      }, 2000);
+      setTimeout(() => { gifContainer.innerHTML = ''; }, 2000);
     }
   });
 }
 
-/**
- * unscrambleBoxWithRoses:
- *  - unscrambles the box
- *  - simultaneously, show a quick "rose rain" around the box for 2.5s
- */
 function unscrambleBoxWithRoses(box, onDone) {
   if (box.__isUnscrambled) {
     if (onDone) onDone();
@@ -374,7 +368,7 @@ function unscrambleBoxWithRoses(box, onDone) {
   }
   box.__isUnscrambled = true;
 
-  // Start a short rose fall around the box for ~2.5s
+  console.log("Starting rose rain around unscrambling box.");
   startRoseRainAroundBox(box, 2500);
 
   const allLetters = box.__letters;
@@ -384,6 +378,7 @@ function unscrambleBoxWithRoses(box, onDone) {
 
   function animateNextWord() {
     if (currentWordIndex >= wordsCount) {
+      console.log("Box unscramble done.");
       if (onDone) onDone();
       return;
     }
@@ -403,82 +398,81 @@ function unscrambleBoxWithRoses(box, onDone) {
   animateNextWord();
 }
 
-/** 
- *  Creates small rose images that "fall" around the targetBox
- *  for the given duration (e.g., 2500ms).
+/**
+ * startRoseRainAroundBox - spawns short-lived rose images 
+ * near the top of the given box for 'duration' ms
  */
 function startRoseRainAroundBox(box, duration) {
+  console.log("startRoseRainAroundBox for " + duration + "ms");
   const endTime = Date.now() + duration;
-  const boxRect = box.getBoundingClientRect();
+  const rect = box.getBoundingClientRect();
 
   (function frame() {
     const now = Date.now();
-    if (now >= endTime) return;
+    if (now >= endTime) {
+      console.log("Rose rain around box ended.");
+      return;
+    }
 
-    // spawn a rose or two near the top of the box
     spawnRose({
-      xRangeMin: boxRect.left,
-      xRangeMax: boxRect.right,
-      yStart: boxRect.top - 20
+      xMin: rect.left,
+      xMax: rect.right,
+      yStart: rect.top - 30
     });
-
     requestAnimationFrame(frame);
   })();
 }
 
 /**
- * spawnRose:
- * Creates a new rose <img> at a random x between xRangeMin and xRangeMax,
- * sets its top to yStart, and applies the .falling-rose animation. 
- * We'll remove it from the DOM after ~4s (the animation ends).
+ * spawnRose - 
+ *  creates an <img> with inline base64 "rose" 
+ *  at a random x between xMin, xMax, and top = yStart 
+ *  uses .falling-rose CSS 
  */
-function spawnRose({ xRangeMin, xRangeMax, yStart }) {
+function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
-  rose.src = 'https://raw.githubusercontent.com/justadudewhohacks/flowers/main/rose.png';
+  // inline base64 rose PNG to avoid external links
+  rose.src = RENDER_ROSE_BASE64;
   rose.className = 'falling-rose';
 
-  // random x within that range
-  const xPos = Math.floor(Math.random() * (xRangeMax - xRangeMin)) + xRangeMin;
+  const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
   rose.style.left = xPos + 'px';
   rose.style.top  = yStart + 'px';
 
-  // Insert into body
   document.body.appendChild(rose);
 
-  // Remove after a few seconds (the duration of @keyframes roseFall)
+  // remove after animation (~5s)
   setTimeout(() => {
     if (rose.parentNode) {
       rose.parentNode.removeChild(rose);
     }
-  }, 4000);
+  }, 5000);
 }
 
 /****************************************************************
  * FINAL ALIGNMENT:
- *  Screen -> black
- *  All boxes align vertically under the GIF container
- *  Roses fall from the top for ~5s
- *  Then background returns to pink
+ *   1) Screen -> black
+ *   2) Boxes -> vertical stack under GIF
+ *   3) Roses from full screen top for 5s
+ *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  // 1) Fade screen to black
+  console.log("handleFinalAlignment => screen black, line up boxes, rain roses.");
   document.body.style.backgroundColor = 'black';
 
-  // 2) Align all boxes vertically beneath the GIF container
   alignBoxesVerticallyUnderGif();
 
-  // 3) Start rose fall from the top for ~5 seconds
   startRoseRainFullScreen(5000, () => {
-    // 4) revert to pink
+    console.log("Full-screen rose rain done. Return to pink.");
     document.body.style.backgroundColor = originalBodyColor;
   });
 }
 
 function alignBoxesVerticallyUnderGif() {
+  console.log("Aligning boxes vertically under GIF...");
   const gifRect = gifContainer.getBoundingClientRect();
   const startY = gifRect.bottom + 20; 
   const centerX = window.innerWidth / 2;
-
   let currentY = startY;
 
   scrambledBoxes.forEach(box => {
@@ -494,13 +488,8 @@ function alignBoxesVerticallyUnderGif() {
   });
 }
 
-/**
- * startRoseRainFullScreen
- *  - spawns roses from the top of the screen (full width) 
- *    for the given 'duration' in ms
- *  - once the duration ends, calls the callback
- */
 function startRoseRainFullScreen(duration, callback) {
+  console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
 
   (function frame() {
@@ -510,15 +499,19 @@ function startRoseRainFullScreen(duration, callback) {
       return;
     }
 
-    // spawn a few roses across the full screen width
     for (let i = 0; i < 3; i++) {
-      spawnRose({
-        xRangeMin: 0,
-        xRangeMax: window.innerWidth,
-        yStart: -50
+      spawnRose({ 
+        xMin: 0, 
+        xMax: window.innerWidth, 
+        yStart: -60 
       });
     }
-
     requestAnimationFrame(frame);
   })();
 }
+
+/****************************************************************
+ * Our Inline Base64 Rose Image
+ ****************************************************************/
+const RENDER_ROSE_BASE64 = 
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAqCAYAAAB/YiEDAAAACXBIWXMAABYlAAAWJQFJUiTwAAACD0lEQVRYhe3XP2hTYRTG8ZdOGvAHaSN7DWUWA3WYuMeRDYiG6iFuJF4AkjQ3rIOLOHRAUa6CXYxUNhKUHkQEv9Dx5E0nvbj7KRnX66tyV+jrpvb/N2+939253/O/KiO6zhMG/Ze0Jqe3vjQZWguob31D59R+9EWOiNIlaRSIXONbdAW4GNLhXnUFou0EquB6my3kvXKSfGE/vxzUUQdFv5enbFRPVrSfRAKMLOiygd0twB8o4kssoNBQr3DyO93zN1wM2mvJJPDpnr/hzqg4odrXwNy9WdP5G0asNxK7jWTUzWpWJspqnMDqLxkRtrt9VDFSTvnw6kl7nOVZaq12mylg92UH7Mdq7w/Pp4zSCmwqHNU+G2dhZ5Dv5E09tWBHt1mXCxWPaZMVntMG9oRPEwNu1T/IVYI1EhgqHzY5GKKEGyd/j08pthYKCeaY3XhEjsMRuIURdJpUzpNrc3VTbnP4ryA1NmqU4rpGKn7r8bnWBqcxHaXfug05MR+ifCUPul2cxVt+o7er8VVUJFDxc98+c++KBDZz2LgRrXSlDSYkZMJu04rcrFK7c+S476u7LDp1Zrc+pAbpWZI9l4IOqEGykk+KC/lfJbPnQnXs2n9JacYVKUUpA99L2Y1uS6300bNX2pLnK/FZbl+SERk67uv1+8aOyODZE9ptXUtZBcoJ1NWXDJ0ERdBo+31dl0W7U3etNwqSjo1mT/nT30NFonFqX3e6KNhm9JO/DYLcLf+YG7yX19OWQEjG1BzKCt9ARdKLy0pH1nAgAAAABJRU5ErkJggg==";

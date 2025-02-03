@@ -83,8 +83,8 @@ button {
 
 #gif-container {
   margin-top: 20px;
-  opacity: 0;               /* Start invisible */
-  transition: opacity 2s;   /* Smooth fade in/out */
+  opacity: 0;               
+  transition: opacity 2s;  
 }
 
 #gif-container img {
@@ -103,39 +103,39 @@ button {
   z-index: 2;
   cursor: pointer;
   overflow: hidden;
-  font-size: 14px;   /* smaller letters */
-  padding: 6px;      /* small padding so text isn't glued to edges */
-
-  /* We'll add a default transition for left/top for the final alignment */
-  transition: left 2s ease, top 2s ease;
+  font-size: 14px;   
+  padding: 6px;      
+  transition: left 2s ease, top 2s ease; /* for final alignment */
 }
 
-/* Each scrambled letter transitions both transform and opacity */
 .scrambled-letter {
   position: absolute;
   transition: transform 2s ease, opacity 2s ease;
   font-weight: bold;
   color: #333;
-  font-size: 14px; /* smaller letters */
+  font-size: 14px;
 }
 
 /* 
    Rose images that we create for the "falling roses" 
-   We'll animate them with a keyframes approach or JavaScript approach 
+   We'll animate them with keyframes or via absolute positioning
 */
 .falling-rose {
   position: absolute;
-  width: 30px;  /* approximate size for the rose */
+  width: 30px;
   height: 30px;
-  pointer-events: none; /* don't block clicks */
-  z-index: 999;         /* appear on top of everything */
-  animation: roseFall linear forwards;
+  pointer-events: none; 
+  z-index: 999;       
+  animation: roseFall 5s linear forwards;
+  /* 
+    5s ensures the rose travels from just above the screen 
+    to beyond the bottom 
+  */
 }
 
-/* We'll define a keyframes animation for falling down the screen */
 @keyframes roseFall {
   0% {
-    transform: translateY(-50px) rotate(0deg);
+    transform: translateY(-60px) rotate(0deg);
     opacity: 1;
   }
   100% {
