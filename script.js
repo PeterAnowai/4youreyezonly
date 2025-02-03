@@ -136,9 +136,7 @@ function darkenBackground() {
   g = Math.max(g - 20, 0);
   b = Math.max(b - 20, 0);
 
-  backgroundColor = `#${r.toString(16).padStart(2, '0')}`
-                  + `${g.toString(16).padStart(2, '0')}`
-                  + `${b.toString(16).padStart(2, '0')}`;
+  backgroundColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   document.body.style.backgroundColor = backgroundColor;
 }
 
@@ -200,51 +198,52 @@ function doesOverlap(x, y, width, height, containerRect) {
  *  1) Each letter spawns in a random spot inside #scrambled-container
  *  2) On hover, letters move to a single-line arrangement
  *     one word at a time.
+ *  3) Added fade-in and slight rotation effect during unscrambling.
  *******************************************************/
 const sentence = "you are beautiful";
-const words = sentence.split(" "); // ["you", "are", "beautiful"]
+const words = sentence.split(" ");
 
-// Container dimensions
-const containerWidth  = scrambledContainer.clientWidth;  // ~400px
-const containerHeight = scrambledContainer.clientHeight; // ~60px
+const containerWidth  = scrambledContainer.clientWidth;
+const containerHeight = scrambledContainer.clientHeight;
 
-// We'll store data for each letter
 let allLetters = [];
 
-// 1) Build array of letters + spaces
+// Build an array of letter objects with their word index.
 words.forEach((word, wIndex) => {
   const letters = [...word];
   if (wIndex < words.length - 1) {
-    letters.push(" "); // space after each word except the last
+    letters.push(" ");
   }
   letters.forEach(char => {
     allLetters.push({ char, wordIndex: wIndex });
   });
 });
 
-// 2) Create & position each letter <span>
-const letterWidth = 20;  // horizontal offset per character
-const wordSpacing = 10;  // extra offset for spaces
-let currentX = 0;        
-let currentY = 20;       // vertical position to keep text visible in 60px height
+const letterWidth = 20;  // horizontal space per letter
+const wordSpacing = 10;  // extra space after a word
+let currentX = 0;
+let currentY = 20;       // vertical position for the final arrangement
 
 allLetters.forEach(obj => {
   const span = document.createElement('span');
   span.className = 'scrambled-letter';
   span.textContent = obj.char;
 
-  // Random initial position inside the container
-  // Subtract a bit so letters aren't clipped at edges
-  const randX = Math.random() * (containerWidth  - letterWidth);
+  // Random initial position inside the container (avoiding clipping)
+  const randX = Math.random() * (containerWidth - letterWidth);
   const randY = Math.random() * (containerHeight - 30);
 
-  span.style.transform = `translate(${randX}px, ${randY}px)`;
+  // Add a slight random rotation between -30° and 30°
+  const randomAngle = Math.random() * 60 - 30;
+  span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
+  
+  // Set an initial opacity so the fade-in during unscrambling is visible
+  span.style.opacity = '0.7';
 
-  // Final position (left to right)
+  // Define final position for a neat, left-to-right arrangement
   obj.finalX = currentX;
   obj.finalY = currentY;
 
-  // Advance currentX for next character
   currentX += letterWidth;
   if (obj.char === " ") {
     currentX += wordSpacing;
@@ -254,18 +253,19 @@ allLetters.forEach(obj => {
   obj.span = span;
 });
 
-// 3) Animate unscrambling on hover (word by word)
+// Animate unscrambling on hover: one word at a time
 scrambledContainer.addEventListener('pointerenter', () => {
   let currentWordIndex = 0;
   
   function animateNextWord() {
     if (currentWordIndex >= words.length) return;
 
-    // Move letters of this word into their final positions
+    // For all letters in the current word, move them to their final position,
+    // rotate them to 0° and fade in to full opacity.
     const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
     wordLetters.forEach(letterObj => {
-      letterObj.span.style.transform = 
-        `translate(${letterObj.finalX}px, ${letterObj.finalY}px)`;
+      letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px) rotate(0deg)`;
+      letterObj.span.style.opacity = '1';
     });
 
     setTimeout(() => {

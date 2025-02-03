@@ -1,4 +1,4 @@
-/* Make the HTML & body occupy the full viewport; no scrollbars */
+/* --- General Page Styles --- */
 html, body {
   margin: 0;
   padding: 0;
@@ -8,7 +8,6 @@ html, body {
   font-family: Arial, sans-serif;
 }
 
-/* Center content on the page */
 body {
   display: flex;
   justify-content: center;
@@ -33,7 +32,6 @@ h1 {
   margin: 0 0 20px 0;
 }
 
-/* Buttons container aligned horizontally */
 .buttons {
   display: flex;
   justify-content: center;
@@ -41,7 +39,6 @@ h1 {
   margin-top: 20px;
 }
 
-/* Generic button styles */
 button {
   padding: 10px 20px;
   font-size: 16px;
@@ -50,20 +47,20 @@ button {
   cursor: pointer;
   transition: transform 0.2s ease;
 }
+
 button:hover {
   transform: scale(1.05);
 }
+
 button:active {
   transform: scale(0.95);
 }
 
-/* YES button style */
 #yes-btn {
   background-color: #4caf50;
   color: white;
 }
 
-/* NO button style */
 #no-btn {
   background-color: #f44336;
   color: white;
@@ -94,13 +91,13 @@ button:active {
   to   { opacity: 1; }
 }
 
-/* The scrambled text container, placed off to the side */
+/* --- Scrambled Text Container Styles --- */
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;      /* Far from the main container */
-  width: 400px;     /* Smaller width, enough for the text */
-  height: 60px;     /* Smaller height, just enough for one line */
+  left: 600px;
+  width: 400px;
+  height: 60px;
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 10px;
@@ -108,19 +105,19 @@ button:active {
   user-select: none;
   z-index: 2;
   cursor: default;
-  overflow: hidden; /* No scrollbars */
+  overflow: hidden;
 }
 
-/* Each scrambled letter: absolute position + transition for animation */
+/* Each scrambled letter now transitions both transform and opacity */
 .scrambled-letter {
   position: absolute;
-  transition: transform 2s ease;
+  transition: transform 2s ease, opacity 2s ease;
   font-weight: bold;
   font-size: 20px;
   color: #333;
 }
 
-/* Responsive adjustments */
+/* --- Responsive Adjustments --- */
 @media (max-width: 600px) {
   .container {
     width: 90%;
@@ -139,7 +136,7 @@ button:active {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 320px;  /* Also big enough on smaller screens */
+    width: 320px;
     height: 60px;
   }
 }
