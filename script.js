@@ -26,6 +26,12 @@ const message        = document.getElementById('message');
 const gifContainer   = document.getElementById('gif-container');
 const confettiSound  = document.getElementById('confetti-sound');
 
+/* Store the original position of No button so we can reset it later */
+const noBtnInitialPosition = {
+  left: noBtn.offsetLeft,
+  top:  noBtn.offsetTop
+};
+
 /* For the background color transitions */
 let originalBodyColor = '#ffebee'; // the pink
 document.body.style.backgroundColor = originalBodyColor;
@@ -44,7 +50,9 @@ let currentMessageIndex = 0;
 /****************************************************************
  * NO BUTTON FUNCTIONALITY
  ****************************************************************/
-noBtn.addEventListener('click', () => {
+noBtn.addEventListener('click', handleNoClick);
+
+function handleNoClick() {
   // Display one of the "No" messages
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
@@ -76,8 +84,22 @@ noBtn.addEventListener('click', () => {
   setTimeout(() => {
     message.textContent = '';
     clearInterval(movementInterval);
+
+    // Return the No button to its original position
+    resetNoButtonPosition();
   }, 5000);
-});
+}
+
+function resetNoButtonPosition() {
+  // Restore its position to how it was initially
+  noBtn.style.position = '';
+  noBtn.style.left = '';
+  noBtn.style.top = '';
+  // Alternatively, if you want an absolute position with the exact same offset:
+  // noBtn.style.position = 'absolute';
+  // noBtn.style.left = noBtnInitialPosition.left + 'px';
+  // noBtn.style.top  = noBtnInitialPosition.top  + 'px';
+}
 
 function darkenBackground() {
   // Darken each component by 20
@@ -153,13 +175,6 @@ function hexToRgb(hexColor) {
 
 /****************************************************************
  * CREATE SIX SCRAMBLED BOXES (NON-OVERLAPPING)
- *  New sentences:
- *   1) "You are beautiful"
- *   2) "You are smart"
- *   3) "You are amazing"
- *   4) "You are a blessing"
- *   5) "You are an angel"
- *   6) "You are mine"
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -182,24 +197,41 @@ function createAllScrambledBoxes() {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
-    // Place it so it doesn't overlap .container or other boxes
-    placeBoxRandomly(box, mainContainer);
-
-    // Scramble the sentence inside this box
+    // We'll first scramble the sentence to measure how wide it needs to be:
     scrambleTextIntoBox(sentence, box);
+
+    // Now that we know the final position of letters, we can set the box width.
+    const neededWidth = measureScrambledBoxWidth(box);
+    box.style.width = neededWidth + 'px';
+    box.style.height = '60px'; // small, enough for one line of 14px text
+
+    // Then place it so it doesn't overlap .container or other boxes
+    placeBoxRandomly(box, mainContainer, neededWidth, 60);
 
     document.body.appendChild(box);
     scrambledBoxes.push(box);
   });
 }
 
-function placeBoxRandomly(box, mainContainer) {
-  const MAX_ATTEMPTS = 100;
-  const boxWidth  = 200;  // approximate
-  const boxHeight = 60;   // approximate
+/**
+ * measureScrambledBoxWidth - 
+ *  inspects the final position of the last letter in the box to see how wide it needs.
+ */
+function measureScrambledBoxWidth(box) {
+  // We stored each letter object in box.__letters
+  const allLetters = box.__letters;
+  if (!allLetters || allLetters.length === 0) return 200; // fallback
+  
+  // The max finalX among all letters + a small margin
+  const maxFinalX = Math.max(...allLetters.map(l => l.finalX));
+  return maxFinalX + 30; // some padding
+}
 
-  // Temporarily set the box size for overlap checks
-  box.style.width  = boxWidth + 'px';
+function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
+  const MAX_ATTEMPTS = 100;
+
+  // Temporarily set the box size for overlap checks (they come from measureScrambledBoxWidth)
+  box.style.width  = boxWidth  + 'px';
   box.style.height = boxHeight + 'px';
 
   let attempts = 0;
@@ -251,6 +283,11 @@ function rectsOverlap(x, y, w, h, rect2) {
   return overlapHoriz && overlapVert;
 }
 
+/**
+ * scrambleTextIntoBox
+ * - Creates .scrambled-letter spans for each character, storing finalX/finalY.
+ * - Also sets box.__letters = arrayOfLetterObjects.
+ */
 function scrambleTextIntoBox(sentence, box) {
   const words = sentence.split(' ');
   const allLetters = [];
@@ -302,7 +339,7 @@ function scrambleTextIntoBox(sentence, box) {
  * "YES" BUTTON: On each click, unscramble exactly one box
  *  - Transition page to black
  *  - Fireworks around that box
- *  - Fade in happy GIF, fade out after unscramble
+ *  - Fade in happy GIF, fade out after unscramble (unless it's the last box)
  *  - Return to pink after unscramble
  ****************************************************************/
 let unscrambleIndex = 0; // which box unscrambles next
@@ -335,16 +372,19 @@ function handleYesClick() {
 
   unscrambleBox(targetBox, () => {
     // After unscrambling finishes:
-    // revert body color
     document.body.style.backgroundColor = originalBodyColor;
 
-    // fade out gif
-    gifContainer.style.opacity = 0;
-    setTimeout(() => { gifContainer.innerHTML = ''; }, 2000);
-
-    // If all boxes unscrambled, change heading
+    // If all boxes are unscrambled...
     if (unscrambleIndex >= scrambledBoxes.length) {
+      // ...change heading
       document.querySelector('h1').textContent = "Will you be My Valentines?";
+      // **Keep** the GIF on screen (no fade out).
+    } else {
+      // If not the last unscramble, fade out the GIF
+      gifContainer.style.opacity = 0;
+      setTimeout(() => {
+        gifContainer.innerHTML = '';
+      }, 2000);
     }
   });
 }
