@@ -1,4 +1,3 @@
-<!-- Same as your original -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +7,12 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Main container for Valentine logic -->
   <div class="container">
-    <h1>click meeeee</h1>
+    <!-- Heading changed initially to "click me" -->
+    <h1>click me</h1>
+
     <div class="buttons">
       <button id="yes-btn">Yes</button>
       <button id="no-btn">No</button>
@@ -18,18 +21,22 @@
     <div id="gif-container"></div>
   </div>
 
+  <!-- Background music: initially muted; will unmute on first interaction -->
   <audio id="bg-music" autoplay muted>
     <source
       src="https://raw.githubusercontent.com/PeterAnowai/Whats-Feb-14-Again-/59db36b57513c5cca7b04df7c22559f882ce1870/Daniel%20Caesar%20-%20Superpowers.mp3"
       type="audio/mpeg"
     >
+    Your browser does not support the audio element.
   </audio>
 
+  <!-- Audio for "Yes" button sound effect (Hooray) -->
   <audio
     id="confetti-sound"
     src="https://raw.githubusercontent.com/PeterAnowai/Whats-Feb-14-Again-/59db36b57513c5cca7b04df7c22559f882ce1870/Hooray.mp3">
   </audio>
 
+  <!-- External JavaScript file -->
   <script src="script.js"></script>
 </body>
 </html>
