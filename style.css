@@ -47,17 +47,17 @@ button {
   border-radius: 5px;
   cursor: pointer;
   transition: transform 0.2s ease;
-  transform: none; /* ensure a consistent base state */
+  transform: none; /* consistent base state */
 }
 
-/* On devices that support hover (e.g. desktop), use the hover transform */
+/* Desktop hover effect */
 @media (hover: hover) {
   button:hover {
     transform: scale(1.05);
   }
 }
 
-/* On touch devices (hover: none), limit the effect to the active state */
+/* Mobile active effect */
 @media (hover: none) {
   button:active {
     transform: scale(0.95);
@@ -103,9 +103,8 @@ button {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 50px;   /* Adjusted for better visibility */
-  width: 400px;
-  height: 60px;
+  left: 50px;
+  /* Remove fixed width & height so we can size dynamically in JS */
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 10px;
@@ -144,7 +143,5 @@ button {
   #scrambled-container {
     top: 10px;
     left: 10px;
-    width: 320px;
-    height: 60px;
   }
 }

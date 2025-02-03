@@ -195,54 +195,54 @@ function doesOverlap(x, y, width, height, containerRect) {
 
 /*******************************************************
  * SCRAMBLED LETTERS: "you are beautiful"
- *  1) Each letter spawns in a random spot inside #scrambled-container
- *  2) On click, letters move to a single-line arrangement one word at a time.
- *  3) Added fade-in and slight rotation effect during unscrambling.
  *******************************************************/
 const sentence = "you are beautiful";
 const words = sentence.split(" ");
 
-const containerWidth  = scrambledContainer.clientWidth;
-const containerHeight = scrambledContainer.clientHeight;
-
 let allLetters = [];
 
-// Build an array of letter objects with their word index.
+// We track the final "currentX" as we place letters for unscrambling
+// so we can set the container’s width precisely.
+let currentX = 0;
+
+// Build letter objects
 words.forEach((word, wIndex) => {
   const letters = [...word];
-  if (wIndex < words.length - 1) {
-    letters.push(" ");
-  }
+  // Add space after each word except the last
+  if (wIndex < words.length - 1) letters.push(" ");
   letters.forEach(char => {
     allLetters.push({ char, wordIndex: wIndex });
   });
 });
 
+// We'll use these values to position letters horizontally
 const letterWidth = 20;  // horizontal space per letter
 const wordSpacing = 10;  // extra space after a word
-let currentX = 0;
-let currentY = 20;       // vertical position for the final arrangement
+// The final text arrangement sits on a single line, so let's set finalY:
+let finalY = 20;
 
-allLetters.forEach(obj => {
+// Create each scrambled letter <span>
+allLetters.forEach((obj) => {
   const span = document.createElement('span');
   span.className = 'scrambled-letter';
   span.textContent = obj.char;
 
-  // Random initial position inside the container (avoiding clipping)
-  const randX = Math.random() * (containerWidth - letterWidth);
-  const randY = Math.random() * (containerHeight - 30);
+  // Random initial position (just for the scrambled look)
+  // We'll guess a "temp" width of 300px / height of 60px for random positioning
+  // so they don't fly off too far from the container
+  const randX = Math.random() * 300;
+  const randY = Math.random() * 50;
 
-  // Add a slight random rotation between -30° and 30°
-  const randomAngle = Math.random() * 60 - 30;
+  // Rotate each letter randomly
+  const randomAngle = Math.random() * 60 - 30; // –30° to +30°
   span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
-  
-  // Set an initial opacity so the fade-in during unscrambling is visible
   span.style.opacity = '0.7';
 
-  // Define final position for a neat, left-to-right arrangement
+  // Store final (aligned) positions for unscrambling
   obj.finalX = currentX;
-  obj.finalY = currentY;
+  obj.finalY = finalY;
 
+  // Advance currentX for the next character
   currentX += letterWidth;
   if (obj.char === " ") {
     currentX += wordSpacing;
@@ -252,27 +252,5 @@ allLetters.forEach(obj => {
   obj.span = span;
 });
 
-// Animate unscrambling on click: one word at a time
-scrambledContainer.addEventListener('click', () => {
-  console.log("Scrambled container click event fired."); // Debug log
-  let currentWordIndex = 0;
-  
-  function animateNextWord() {
-    if (currentWordIndex >= words.length) return;
-
-    // For all letters in the current word, move them to their final position,
-    // rotate them to 0° and fade in to full opacity.
-    const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
-    wordLetters.forEach(letterObj => {
-      letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px) rotate(0deg)`;
-      letterObj.span.style.opacity = '1';
-    });
-
-    setTimeout(() => {
-      currentWordIndex++;
-      animateNextWord();
-    }, 2000);
-  }
-
-  animateNextWord();
-}, { once: true });
+// Once we've positioned everything, set container width/height in JS:
+scrambledContainer.style.width = (curren
