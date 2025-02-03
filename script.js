@@ -62,7 +62,7 @@ function handleNoClick() {
 
   // Show sad GIF (fade in, then out)
   gifContainer.innerHTML = `<img src="${SAD_GIF_URL}" alt="Sad Mocha Bear GIF">`;
-  gifContainer.style.opacity = 1; // fade in quickly
+  gifContainer.style.opacity = 1; // fade in
 
   setTimeout(() => {
     gifContainer.style.opacity = 0; // fade out
@@ -84,25 +84,18 @@ function handleNoClick() {
   setTimeout(() => {
     message.textContent = '';
     clearInterval(movementInterval);
-
     // Return the No button to its original position
     resetNoButtonPosition();
   }, 5000);
 }
 
 function resetNoButtonPosition() {
-  // Restore its position to how it was initially
   noBtn.style.position = '';
   noBtn.style.left = '';
-  noBtn.style.top = '';
-  // Alternatively, if you want an absolute position with the exact same offset:
-  // noBtn.style.position = 'absolute';
-  // noBtn.style.left = noBtnInitialPosition.left + 'px';
-  // noBtn.style.top  = noBtnInitialPosition.top  + 'px';
+  noBtn.style.top  = '';
 }
 
 function darkenBackground() {
-  // Darken each component by 20
   let [r, g, b] = hexToRgb(document.body.style.backgroundColor) || [255, 235, 238];
   r = Math.max(r - 20, 0);
   g = Math.max(g - 20, 0);
@@ -157,15 +150,13 @@ function doesOverlap(x, y, width, height, containerRect) {
 }
 
 function hexToRgb(hexColor) {
-  // Handles #rrggbb or rgb(r,g,b)
   if (hexColor.startsWith('#')) {
     const r = parseInt(hexColor.slice(1,3), 16);
     const g = parseInt(hexColor.slice(3,5), 16);
     const b = parseInt(hexColor.slice(5,7), 16);
     return [r,g,b];
   } else if (hexColor.startsWith('rgb')) {
-    // parse "rgb(r, g, b)"
-    const match = hexColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    const match = hexColor.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
     if (match) {
       return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
     }
@@ -186,6 +177,7 @@ const scrambledTexts = [
 ];
 
 let scrambledBoxes = [];
+let unscrambleIndex = 0; // which box unscrambles next
 
 // Create them on page load
 window.addEventListener('load', createAllScrambledBoxes);
@@ -197,15 +189,13 @@ function createAllScrambledBoxes() {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
-    // We'll first scramble the sentence to measure how wide it needs to be:
+    // Scramble first to measure how wide it should be
     scrambleTextIntoBox(sentence, box);
 
-    // Now that we know the final position of letters, we can set the box width.
     const neededWidth = measureScrambledBoxWidth(box);
     box.style.width = neededWidth + 'px';
-    box.style.height = '60px'; // small, enough for one line of 14px text
+    box.style.height = '60px';
 
-    // Then place it so it doesn't overlap .container or other boxes
     placeBoxRandomly(box, mainContainer, neededWidth, 60);
 
     document.body.appendChild(box);
@@ -213,40 +203,26 @@ function createAllScrambledBoxes() {
   });
 }
 
-/**
- * measureScrambledBoxWidth - 
- *  inspects the final position of the last letter in the box to see how wide it needs.
- */
 function measureScrambledBoxWidth(box) {
-  // We stored each letter object in box.__letters
   const allLetters = box.__letters;
-  if (!allLetters || allLetters.length === 0) return 200; // fallback
-  
-  // The max finalX among all letters + a small margin
+  if (!allLetters || allLetters.length === 0) return 200;
   const maxFinalX = Math.max(...allLetters.map(l => l.finalX));
-  return maxFinalX + 30; // some padding
+  return maxFinalX + 30; // margin
 }
 
 function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
   const MAX_ATTEMPTS = 100;
-
-  // Temporarily set the box size for overlap checks (they come from measureScrambledBoxWidth)
-  box.style.width  = boxWidth  + 'px';
-  box.style.height = boxHeight + 'px';
-
   let attempts = 0;
-  let placed = false;
+  let placed   = false;
 
   while (!placed && attempts < MAX_ATTEMPTS) {
     attempts++;
     const x = Math.floor(Math.random() * (window.innerWidth  - boxWidth));
     const y = Math.floor(Math.random() * (window.innerHeight - boxHeight));
 
-    // Check overlap with .container
     const containerRect = mainContainer.getBoundingClientRect();
     if (rectsOverlap(x, y, boxWidth, boxHeight, containerRect)) continue;
 
-    // Check overlap with other scrambled-boxes
     let overlapFound = false;
     for (const other of document.querySelectorAll('.scrambled-box')) {
       if (other === box) continue;
@@ -258,7 +234,6 @@ function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
     }
 
     if (!overlapFound) {
-      // Place it
       box.style.left = x + 'px';
       box.style.top  = y + 'px';
       placed = true;
@@ -283,18 +258,12 @@ function rectsOverlap(x, y, w, h, rect2) {
   return overlapHoriz && overlapVert;
 }
 
-/**
- * scrambleTextIntoBox
- * - Creates .scrambled-letter spans for each character, storing finalX/finalY.
- * - Also sets box.__letters = arrayOfLetterObjects.
- */
 function scrambleTextIntoBox(sentence, box) {
   const words = sentence.split(' ');
   const allLetters = [];
   
   words.forEach((word, wIndex) => {
     const letters = [...word];
-    // add space after each word except last
     if (wIndex < words.length - 1) letters.push(" ");
     letters.forEach(char => {
       allLetters.push({ char, wordIndex: wIndex });
@@ -311,14 +280,12 @@ function scrambleTextIntoBox(sentence, box) {
     span.className = 'scrambled-letter';
     span.textContent = obj.char;
 
-    // random initial position
     const randX = Math.random() * 100;
     const randY = Math.random() * 30;
     const randomAngle = Math.random() * 60 - 30;
     span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
     span.style.opacity = '0.7';
 
-    // final position
     obj.finalX = currentX;
     obj.finalY = currentY;
 
@@ -336,51 +303,59 @@ function scrambleTextIntoBox(sentence, box) {
 }
 
 /****************************************************************
- * "YES" BUTTON: On each click, unscramble exactly one box
- *  - Transition page to black
- *  - Fireworks around that box
- *  - Fade in happy GIF, fade out after unscramble (unless it's the last box)
- *  - Return to pink after unscramble
+ * "YES" BUTTON: 
+ *   1) If not all boxes unscrambled, unscramble the next one. 
+ *   2) If all boxes unscrambled and heading is "Will you be My Valentines?", 
+ *      rearrange all boxes in a vertical stack beneath the GIF with confetti for ~5s
  ****************************************************************/
-let unscrambleIndex = 0; // which box unscrambles next
-
 yesBtn.addEventListener('click', handleYesClick);
 
 function handleYesClick() {
-  // Play the "Hooray" sound effect every time
+  // Always play the "Hooray" sound
   confettiSound.currentTime = 0;
   confettiSound.play().catch(e => console.log(e));
 
-  // If we've unscrambled all 6 already, do nothing else
-  if (unscrambleIndex >= scrambledBoxes.length) {
+  const heading = document.querySelector('h1');
+
+  // CASE 1: Not all boxes unscrambled yet
+  if (unscrambleIndex < scrambledBoxes.length) {
+    startUnscrambleProcess();
     return;
   }
 
-  // Start unscrambling the next box
+  // CASE 2: All boxes unscrambled
+  // If heading is already "Will you be My Valentines?", we do the new alignment
+  if (heading.textContent === "Will you be My Valentines?") {
+    handleFinalAlignment();
+  }
+}
+
+function startUnscrambleProcess() {
+  // If we've unscrambled all 6 already, do nothing
+  if (unscrambleIndex >= scrambledBoxes.length) return;
+
   const targetBox = scrambledBoxes[unscrambleIndex];
   unscrambleIndex++;
 
-  // Fade page to black
+  // Fade to black
   document.body.style.backgroundColor = 'black';
 
-  // Fade in happy GIF
+  // Fade in happy GIF (if it's not already on)
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
-  gifContainer.style.opacity = 1; 
+  gifContainer.style.opacity = 1;
 
-  // Fireworks while unscrambling
+  // Fireworks around that box
   startFireworksAroundBox(targetBox);
 
   unscrambleBox(targetBox, () => {
-    // After unscrambling finishes:
     document.body.style.backgroundColor = originalBodyColor;
 
-    // If all boxes are unscrambled...
+    // If all unscrambled, update heading
     if (unscrambleIndex >= scrambledBoxes.length) {
-      // ...change heading
       document.querySelector('h1').textContent = "Will you be My Valentines?";
-      // **Keep** the GIF on screen (no fade out).
+      // Keep the GIF on screen (don't fade out)
     } else {
-      // If not the last unscramble, fade out the GIF
+      // Otherwise, fade out the GIF
       gifContainer.style.opacity = 0;
       setTimeout(() => {
         gifContainer.innerHTML = '';
@@ -434,7 +409,6 @@ function startFireworksAroundBox(box) {
     const timeLeft = endTime - Date.now();
     if (timeLeft <= 0) return;
 
-    // Confetti near the box center
     confetti({
       particleCount: 4,
       angle: Math.random() * 360,
@@ -447,4 +421,70 @@ function startFireworksAroundBox(box) {
 
     requestAnimationFrame(frame);
   })();
+}
+
+/****************************************************************
+ * FINAL ALIGNMENT:
+ *  Screen -> black
+ *  All boxes align vertically under the GIF container
+ *  Confetti "falls" until 3s after they align ( ~5s total ) 
+ *  Then background returns to pink
+ ****************************************************************/
+function handleFinalAlignment() {
+  // 1) Fade screen to black
+  document.body.style.backgroundColor = 'black';
+
+  // 2) Align all boxes vertically beneath the GIF container
+  alignBoxesVerticallyUnderGif();
+
+  // 3) Start confetti for ~5 seconds
+  const endTime = Date.now() + 5000;
+  let confettiInterval;
+  
+  (function continuousConfetti() {
+    const now = Date.now();
+    if (now >= endTime) {
+      // 4) After 5s, revert to pink
+      document.body.style.backgroundColor = originalBodyColor;
+      clearInterval(confettiInterval);
+      return;
+    }
+
+    confetti({
+      particleCount: 6,
+      angle: 90,
+      spread: 60,
+      startVelocity: 20,
+      origin: { x: 0.5, y: -0.01 } // "falling from top"
+    });
+
+    confettiInterval = requestAnimationFrame(continuousConfetti);
+  })();
+}
+
+function alignBoxesVerticallyUnderGif() {
+  // We'll stack them under the GIF in the center of the page
+  const gifRect = gifContainer.getBoundingClientRect();
+  
+  // Let's define a starting top position ~20px below the GIF
+  // and center the boxes horizontally
+  const startY = gifRect.bottom + 20;
+  const centerX = window.innerWidth / 2;
+
+  // Each box is about 60px tall, let's do 10px gap
+  let currentY = startY;
+
+  scrambledBoxes.forEach(box => {
+    // transform from their current position to a new top/left
+    // We'll center them on centerX => left = centerX - (boxWidth/2)
+    const boxRect = box.getBoundingClientRect();
+    const boxWidth = boxRect.width;
+
+    const left = centerX - (boxWidth / 2);
+
+    box.style.left = left + 'px';
+    box.style.top  = currentY + 'px';
+
+    currentY += (boxRect.height + 10);
+  });
 }

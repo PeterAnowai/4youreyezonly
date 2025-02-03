@@ -105,6 +105,9 @@ button {
   overflow: hidden;
   font-size: 14px;   /* smaller letters */
   padding: 6px;      /* small padding so text isn't glued to edges */
+
+  /* We'll add a default transition for left/top for the final alignment */
+  transition: left 2s ease, top 2s ease;
 }
 
 /* Each scrambled letter transitions both transform and opacity */
