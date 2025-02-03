@@ -186,49 +186,39 @@ function createAllScrambledBoxes() {
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
-  // Calculate where the container sits in the page, including scroll offset
-  // (important if you have a scrolled page or any offset)
-  const containerX = containerRect.left + window.scrollX;
-  const containerY = containerRect.top  + window.scrollY;
-  const containerRight = containerRect.right + window.scrollX;
-
   scrambledTexts.forEach((sentence, i) => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
     scrambleTextIntoBox(sentence, box);
 
-    // measure how wide the text wants to be
+    // Measure how wide the text wants to be
     const neededWidth = measureScrambledBoxWidth(box);
     const boxWidth = neededWidth;
     const boxHeight = 60;
 
     box.style.width = boxWidth + 'px';
     box.style.height = boxHeight + 'px';
-    box.style.position = 'absolute';
 
-    // vertical spacing between boxes in each column
-    const spacing = 10; 
-
-    // figure out top offset
-    // for boxes 0..2 => top offset is containerY + i*(boxHeight + spacing)
-    // for boxes 3..5 => the same logic, but colIndex = i-3
-    let topCoord;
-    let leftCoord;
-
+    // Figure out left/right columns
+    // First 3 go on the left side, next 3 on the right side
+    let boxX, boxY;
+    const spacing = 10; // vertical space between boxes
     if (i < 3) {
-      // left column
-      topCoord  = containerY + i * (boxHeight + spacing);
-      leftCoord = containerX - (boxWidth + 20); 
+      // Left column
+      boxX = containerRect.left - boxWidth - 20; 
+      boxY = containerRect.top + (i * (boxHeight + spacing));
     } else {
-      // right column
+      // Right column
       const colIndex = i - 3;
-      topCoord  = containerY + colIndex * (boxHeight + spacing);
-      leftCoord = containerRight + 20;
+      boxX = containerRect.right + 20; 
+      boxY = containerRect.top + (colIndex * (boxHeight + spacing));
     }
 
-    box.style.left = leftCoord + 'px';
-    box.style.top  = topCoord  + 'px';
+    // Absolute positioning at computed coordinates
+    box.style.left = boxX + 'px';
+    box.style.top  = boxY + 'px';
+    box.style.position = 'absolute';
 
     document.body.appendChild(box);
     scrambledBoxes.push(box);
@@ -311,7 +301,7 @@ function handleYesClick() {
     return;
   }
 
-  // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?",
+  // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?", 
   // do final alignment + rose rain from top
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
@@ -386,7 +376,7 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startRoseRainAroundBox - spawns short-lived rose images
+ * startRoseRainAroundBox - spawns short-lived rose images 
  * near the top of the given box for 'duration' ms
  */
 function startRoseRainAroundBox(box, duration) {
@@ -411,10 +401,10 @@ function startRoseRainAroundBox(box, duration) {
 }
 
 /**
- * spawnRose -
- *  creates an <img> with inline base64 "rose"
- *  at a random x between xMin, xMax, and top = yStart
- *  uses .falling-rose CSS
+ * spawnRose - 
+ *  creates an <img> with inline base64 "rose" 
+ *  at a random x between xMin, xMax, and top = yStart 
+ *  uses .falling-rose CSS 
  */
 function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
