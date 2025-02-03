@@ -102,10 +102,12 @@ function darkenBackground() {
   document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 }
 
+/**
+ * Randomly moves the "No" button (during the 5-second scramble).
+ */
 function moveNoButton() {
   const buttonWidth  = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
-
   const maxX = window.innerWidth  - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
@@ -154,7 +156,7 @@ function hexToRgb(hexColor) {
     const b = parseInt(hexColor.slice(5,7), 16);
     return [r,g,b];
   } else if (hexColor.startsWith('rgb')) {
-    const match = hexColor.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+    const match = hexColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
     if (match) {
       return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
     }
@@ -163,7 +165,7 @@ function hexToRgb(hexColor) {
 }
 
 /****************************************************************
- * CREATE SIX SCRAMBLED BOXES (NON-OVERLAPPING)
+ * CREATE SIX SCRAMBLED BOXES (ALIGNED 3 ON EACH SIDE)
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -182,18 +184,41 @@ window.addEventListener('load', createAllScrambledBoxes);
 function createAllScrambledBoxes() {
   console.log("Creating scrambled boxes...");
   const mainContainer = document.querySelector('.container');
+  const containerRect = mainContainer.getBoundingClientRect();
 
-  scrambledTexts.forEach(sentence => {
+  scrambledTexts.forEach((sentence, i) => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
     scrambleTextIntoBox(sentence, box);
 
+    // Measure how wide the text wants to be
     const neededWidth = measureScrambledBoxWidth(box);
-    box.style.width = neededWidth + 'px';
-    box.style.height = '60px';
+    const boxWidth = neededWidth;
+    const boxHeight = 60;
 
-    placeBoxRandomly(box, mainContainer, neededWidth, 60);
+    box.style.width = boxWidth + 'px';
+    box.style.height = boxHeight + 'px';
+
+    // Figure out left/right columns
+    // First 3 go on the left side, next 3 on the right side
+    let boxX, boxY;
+    const spacing = 10; // vertical space between boxes
+    if (i < 3) {
+      // Left column
+      boxX = containerRect.left - boxWidth - 20; 
+      boxY = containerRect.top + (i * (boxHeight + spacing));
+    } else {
+      // Right column
+      const colIndex = i - 3;
+      boxX = containerRect.right + 20; 
+      boxY = containerRect.top + (colIndex * (boxHeight + spacing));
+    }
+
+    // Absolute positioning at computed coordinates
+    box.style.left = boxX + 'px';
+    box.style.top  = boxY + 'px';
+    box.style.position = 'absolute';
 
     document.body.appendChild(box);
     scrambledBoxes.push(box);
@@ -250,54 +275,6 @@ function measureScrambledBoxWidth(box) {
   if (!allLetters.length) return 200;
   const maxFinalX = Math.max(...allLetters.map(l => l.finalX));
   return maxFinalX + 30; 
-}
-
-function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
-  const MAX_ATTEMPTS = 100;
-  let attempts = 0;
-  let placed   = false;
-
-  while (!placed && attempts < MAX_ATTEMPTS) {
-    attempts++;
-    const x = Math.floor(Math.random() * (window.innerWidth  - boxWidth));
-    const y = Math.floor(Math.random() * (window.innerHeight - boxHeight));
-
-    const containerRect = mainContainer.getBoundingClientRect();
-    if (rectsOverlap(x, y, boxWidth, boxHeight, containerRect)) continue;
-
-    let overlapFound = false;
-    for (const other of document.querySelectorAll('.scrambled-box')) {
-      if (other === box) continue;
-      const otherRect = other.getBoundingClientRect();
-      if (rectsOverlap(x, y, boxWidth, boxHeight, otherRect)) {
-        overlapFound = true;
-        break;
-      }
-    }
-
-    if (!overlapFound) {
-      box.style.left = x + 'px';
-      box.style.top  = y + 'px';
-      placed = true;
-    }
-  }
-}
-
-function rectsOverlap(x, y, w, h, rect2) {
-  const left1   = x;
-  const right1  = x + w;
-  const top1    = y;
-  const bottom1 = y + h;
-
-  const left2   = rect2.left;
-  const right2  = rect2.left + rect2.width;
-  const top2    = rect2.top;
-  const bottom2 = rect2.top + rect2.height;
-
-  const overlapHoriz = (left1 < right2) && (right1 > left2);
-  const overlapVert  = (top1 < bottom2) && (bottom1 > top2);
-
-  return overlapHoriz && overlapVert;
 }
 
 /****************************************************************
