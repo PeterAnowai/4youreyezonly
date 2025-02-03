@@ -12,8 +12,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffebee;
-  transition: background-color 0.3s ease;
+  background-color: #ffebee; /* original light pink */
+  transition: background-color 2s ease; 
 }
 
 .container {
@@ -46,8 +46,8 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transform: none;
   transition: transform 0.2s ease;
-  transform: none; /* consistent base state */
 }
 
 /* Desktop hover effect */
@@ -83,36 +83,28 @@ button {
 
 #gif-container {
   margin-top: 20px;
+  opacity: 0;               /* Start invisible */
+  transition: opacity 2s;   /* Smooth fade in/out */
 }
 
-/* Fade in GIFs */
 #gif-container img {
   max-width: 100%;
   height: auto;
   border-radius: 10px;
-  opacity: 0;
-  animation: fadeIn 0.5s ease forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* --- Scrambled Text Container Styles --- */
-#scrambled-container {
+/* --- The 6 scrambled boxes --- */
+.scrambled-box {
   position: absolute;
-  top: 20px;
-  left: 50px;
-  /* Remove fixed width & height so we can size dynamically in JS */
   background-color: #f3f3f3;
   border: 1px solid #ccc;
-  padding: 10px;
   box-sizing: border-box;
   user-select: none;
   z-index: 2;
   cursor: pointer;
   overflow: hidden;
+  font-size: 14px;   /* smaller letters */
+  padding: 6px;      /* small padding so text isn't glued to edges */
 }
 
 /* Each scrambled letter transitions both transform and opacity */
@@ -120,8 +112,8 @@ button {
   position: absolute;
   transition: transform 2s ease, opacity 2s ease;
   font-weight: bold;
-  font-size: 20px;
   color: #333;
+  font-size: 14px; /* smaller letters */
 }
 
 /* --- Responsive Adjustments --- */
@@ -138,10 +130,5 @@ button {
   button {
     font-size: 14px;
     padding: 8px 16px;
-  }
-
-  #scrambled-container {
-    top: 10px;
-    left: 10px;
   }
 }
