@@ -153,14 +153,21 @@ function hexToRgb(hexColor) {
 
 /****************************************************************
  * CREATE SIX SCRAMBLED BOXES (NON-OVERLAPPING)
+ *  New sentences:
+ *   1) "You are beautiful"
+ *   2) "You are smart"
+ *   3) "You are amazing"
+ *   4) "You are a blessing"
+ *   5) "You are an angel"
+ *   6) "You are mine"
  ****************************************************************/
 const scrambledTexts = [
-  "You are awesome",
-  "Be kind always",
-  "Never give up",
-  "Smile every day",
-  "Cherish each moment",
-  "Believe in yourself"
+  "You are beautiful",
+  "You are smart",
+  "You are amazing",
+  "You are a blessing",
+  "You are an angel",
+  "You are mine"
 ];
 
 let scrambledBoxes = [];
@@ -245,7 +252,6 @@ function rectsOverlap(x, y, w, h, rect2) {
 }
 
 function scrambleTextIntoBox(sentence, box) {
-  // We'll scramble each sentence the same way
   const words = sentence.split(' ');
   const allLetters = [];
   
@@ -306,7 +312,7 @@ yesBtn.addEventListener('click', handleYesClick);
 function handleYesClick() {
   // Play the "Hooray" sound effect every time
   confettiSound.currentTime = 0;
-  confettiSound.play().catch(e=>console.log(e));
+  confettiSound.play().catch(e => console.log(e));
 
   // If we've unscrambled all 6 already, do nothing else
   if (unscrambleIndex >= scrambledBoxes.length) {
