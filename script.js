@@ -100,7 +100,7 @@ noBtn.addEventListener('click', () => {
   // Darken background
   darkenBackground();
 
-  // Show sad Mocha Bear GIF
+  // Show sad GIF
   gifContainer.innerHTML = `
     <img
       src="${SAD_GIF_URL}"
@@ -196,8 +196,7 @@ function doesOverlap(x, y, width, height, containerRect) {
 /*******************************************************
  * SCRAMBLED LETTERS: "you are beautiful"
  *  1) Each letter spawns in a random spot inside #scrambled-container
- *  2) On hover, letters move to a single-line arrangement
- *     one word at a time.
+ *  2) On hover, letters move to a single-line arrangement one word at a time.
  *  3) Added fade-in and slight rotation effect during unscrambling.
  *******************************************************/
 const sentence = "you are beautiful";
@@ -255,6 +254,7 @@ allLetters.forEach(obj => {
 
 // Animate unscrambling on hover: one word at a time
 scrambledContainer.addEventListener('pointerenter', () => {
+  console.log("Scrambled container pointerenter event fired."); // Debug log
   let currentWordIndex = 0;
   
   function animateNextWord() {

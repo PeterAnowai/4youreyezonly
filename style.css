@@ -95,7 +95,7 @@ button:active {
 #scrambled-container {
   position: absolute;
   top: 20px;
-  left: 600px;
+  left: 50px;   /* Changed from 600px to 50px for better visibility */
   width: 400px;
   height: 60px;
   background-color: #f3f3f3;
