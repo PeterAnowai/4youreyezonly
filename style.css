@@ -93,7 +93,7 @@ button {
   border-radius: 10px;
 }
 
-/* --- The 6 (or more) scrambled boxes --- */
+/* --- The scrambled boxes --- */
 .scrambled-box {
   position: absolute;
   background-color: #f3f3f3;
@@ -103,7 +103,7 @@ button {
   z-index: 2;
   cursor: pointer;
   overflow: hidden;
-  font-size: 14px;   
+  font-size: 14px;
   padding: 6px;      
   transition: left 2s ease, top 2s ease; /* for final alignment */
 }
@@ -117,12 +117,12 @@ button {
 }
 
 /* 
-   Rose images that we create for the "falling roses" 
-   We'll animate them with keyframes or via absolute positioning
+   Rose images (local rose.png) that we create for the "falling roses" 
+   We'll animate them with keyframes or absolute positioning
 */
 .falling-rose {
   position: absolute;
-  width: 30px;
+  width: 30px;     /* size of rose image */
   height: 30px;
   pointer-events: none; 
   z-index: 999;       
