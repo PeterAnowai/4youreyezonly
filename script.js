@@ -165,7 +165,7 @@ function hexToRgb(hexColor) {
 }
 
 /****************************************************************
- * CREATE SIX SCRAMBLED BOXES (ALIGNED 3 ON EACH SIDE)
+ * CREATE SIX SCRAMBLED BOXES (START OFF RANDOM)
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -184,41 +184,67 @@ window.addEventListener('load', createAllScrambledBoxes);
 function createAllScrambledBoxes() {
   console.log("Creating scrambled boxes...");
   const mainContainer = document.querySelector('.container');
-  const containerRect = mainContainer.getBoundingClientRect();
 
-  scrambledTexts.forEach((sentence, i) => {
+  scrambledTexts.forEach(sentence => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
     scrambleTextIntoBox(sentence, box);
 
-    // Measure how wide the text wants to be
+    // measure how wide the text wants to be
     const neededWidth = measureScrambledBoxWidth(box);
-    const boxWidth = neededWidth;
-    const boxHeight = 60;
+    box.style.width = neededWidth + 'px';
+    box.style.height = '60px';
 
-    box.style.width = boxWidth + 'px';
-    box.style.height = boxHeight + 'px';
-
-    // The initial (left vs right) alignment is done here
-    // 3 left, 3 right (but can be changed if you like):
-    const spacing = 10; 
-    if (i < 3) {
-      // left column
-      box.style.left = (containerRect.left - boxWidth - 20) + "px";
-      box.style.top  = (containerRect.top + i * (boxHeight + spacing)) + "px";
-    } else {
-      // right column
-      const colIndex = i - 3;
-      box.style.left = (containerRect.right + 20) + "px";
-      box.style.top  = (containerRect.top + colIndex * (boxHeight + spacing)) + "px";
-    }
-
-    box.style.position = 'absolute';
+    // Place them randomly at first
+    placeBoxRandomly(box, mainContainer, neededWidth, 60);
 
     document.body.appendChild(box);
     scrambledBoxes.push(box);
   });
+}
+
+/**
+ * placeBoxRandomly - tries to find a random x,y so that:
+ *   1) The box is fully within the window
+ *   2) Doesn't overlap .container
+ */
+function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
+  const MAX_ATTEMPTS = 100;
+  let attempts = 0;
+  let placed   = false;
+
+  while (!placed && attempts < MAX_ATTEMPTS) {
+    attempts++;
+    const x = Math.floor(Math.random() * (window.innerWidth  - boxWidth));
+    const y = Math.floor(Math.random() * (window.innerHeight - boxHeight));
+
+    const containerRect = mainContainer.getBoundingClientRect();
+    if (rectsOverlap(x, y, boxWidth, boxHeight, containerRect)) continue;
+
+    // no overlap => place the box
+    box.style.left = x + 'px';
+    box.style.top  = y + 'px';
+    box.style.position = 'absolute';
+    placed = true;
+  }
+}
+
+function rectsOverlap(x, y, w, h, rect2) {
+  const left1   = x;
+  const right1  = x + w;
+  const top1    = y;
+  const bottom1 = y + h;
+
+  const left2   = rect2.left;
+  const right2  = rect2.left + rect2.width;
+  const top2    = rect2.top;
+  const bottom2 = rect2.top + rect2.height;
+
+  const overlapHoriz = (left1 < right2) && (right1 > left2);
+  const overlapVert  = (top1 < bottom2) && (bottom1 > top2);
+
+  return overlapHoriz && overlapVert;
 }
 
 function scrambleTextIntoBox(sentence, box) {
@@ -243,7 +269,7 @@ function scrambleTextIntoBox(sentence, box) {
     span.className = 'scrambled-letter';
     span.textContent = obj.char;
 
-    // random initial position
+    // random initial position for scramble effect
     const randX = Math.random() * 100;
     const randY = Math.random() * 30;
     const randomAngle = Math.random() * 60 - 30;
@@ -275,11 +301,9 @@ function measureScrambledBoxWidth(box) {
 
 /****************************************************************
  * "YES" BUTTON
- * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short rose rain near the box).
- * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", line them up 3 left / 3 right 
- *    beside the .container, then do rose rain.
+ * 1) If not all boxes unscrambled, unscramble the next one.
+ * 2) If all boxes unscrambled and heading is "Will you be My Valentines?",
+ *    line them up 3 left / 3 right next to .container, then rose rain.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -297,8 +321,7 @@ function handleYesClick() {
     return;
   }
 
-  // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?", 
-  // do final alignment + rose rain
+  // CASE 2: All boxes unscrambled. 
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
     handleFinalAlignment();
@@ -450,21 +473,22 @@ function alignBoxesLeftAndRightOfContainer() {
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
-  // We'll assume each box is 60px high + ~10px spacing as before
+  // We'll assume each box is ~60px tall, with 10px spacing
   const spacing = 10;  
-  const boxHeight = 60; // each scrambled-box is 60px
+  const boxHeight = 60;
 
   scrambledBoxes.forEach((box, i) => {
     const boxRect = box.getBoundingClientRect();
     const boxWidth = boxRect.width;
 
+    // For i in [0..2], place left; for i in [3..5], place right
     const colIndex = i < 3 ? i : i - 3;
 
-    const leftCoord = i < 3
-      ? containerRect.left - (boxWidth + 20)   // left side
-      : containerRect.right + 20;             // right side
+    const leftCoord = i < 3 
+      ? containerRect.left - (boxWidth + 20)  // left side
+      : containerRect.right + 20;            // right side
 
-    const topCoord  = containerRect.top + colIndex * (boxHeight + spacing);
+    const topCoord = containerRect.top + colIndex * (boxHeight + spacing);
 
     box.style.left = leftCoord + 'px';
     box.style.top  = topCoord  + 'px';
@@ -485,7 +509,6 @@ function startRoseRainFullScreen(duration, callback) {
       return;
     }
 
-    // Each frame, spawn a few roses at random x across the entire screen
     for (let i = 0; i < 3; i++) {
       spawnRose({ 
         xMin: 0, 
