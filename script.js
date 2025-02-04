@@ -133,7 +133,6 @@ function moveNoButton() {
 }
 
 function doesOverlap(x, y, width, height, containerRect) {
-  // For "No" button logic only: check overlap with container
   const buttonLeft   = x;
   const buttonRight  = x + width;
   const buttonTop    = y;
@@ -157,7 +156,7 @@ function hexToRgb(hexColor) {
     const b = parseInt(hexColor.slice(5,7), 16);
     return [r,g,b];
   } else if (hexColor.startsWith('rgb')) {
-    const match = hexColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    const match = hexColor.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
     if (match) {
       return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
     }
@@ -167,8 +166,8 @@ function hexToRgb(hexColor) {
 
 /****************************************************************
  * CREATE SCRAMBLED BOXES 
- * (Ensures no overlap with each other, container, buttons, 
- *  or screen edges)
+ *   Desktop => ~60px height
+ *   Mobile => ~40px height, smaller letters
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -186,26 +185,37 @@ const scrambledTexts = [
 let scrambledBoxes = [];
 let unscrambleIndex = 0; // which box unscrambles next
 
+// We'll detect mobile vs. desktop:
+function isMobileView() {
+  return window.innerWidth < 600; 
+}
+
 window.addEventListener('load', createAllScrambledBoxes);
 
 function createAllScrambledBoxes() {
   console.log("Creating scrambled boxes...");
-  
+
+  // For each sentence, we create and scramble a box,
+  // then place it without overlapping the container, buttons, or other boxes.
   scrambledTexts.forEach(sentence => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
 
+    // Scramble text in the box
     scrambleTextIntoBox(sentence, box);
 
+    // Determine the box size:
+    // Desktop => height=60, Mobile => height=40
+    const boxHeight = isMobileView() ? 40 : 60;
     // measure how wide the text wants to be
-    const neededWidth = measureScrambledBoxWidth(box);
-    const boxWidth    = neededWidth;
-    const boxHeight   = 60;
+    const neededWidth = measureScrambledBoxWidth(box); 
+    // but let's also scale down the neededWidth a bit if mobile 
+    // to ensure smaller final boxes
+    const boxWidth  = isMobileView() ? Math.floor(neededWidth * 0.8) : neededWidth;
 
-    box.style.width  = boxWidth + 'px';
+    box.style.width  = boxWidth  + 'px';
     box.style.height = boxHeight + 'px';
 
-    // Place them randomly 
     placeBoxRandomly(box, boxWidth, boxHeight);
 
     document.body.appendChild(box);
@@ -214,50 +224,37 @@ function createAllScrambledBoxes() {
 }
 
 /**
- * placeBoxRandomly:
- *  tries to find a random x,y so that the new box does not overlap:
- *    1) The container .container
- *    2) The yes/no buttons
- *    3) Any previously placed box
- *    4) The screen edges
+ * placeBoxRandomly - ensures no overlap with:
+ *   - container
+ *   - yes/no buttons
+ *   - any previously placed box
+ *   - screen edges
  */
 function placeBoxRandomly(box, boxWidth, boxHeight) {
   const MAX_ATTEMPTS = 200; 
   let attempts = 0;
   let placed   = false;
 
-  // Prepare rect for container
-  const container = document.querySelector('.container');
-  const containerRect = container.getBoundingClientRect();
-
-  // Prepare rects for the two buttons
+  // bounding rects for container, yes/no
+  const containerRect = document.querySelector('.container').getBoundingClientRect();
   const yesRect = yesBtn.getBoundingClientRect();
   const noRect  = noBtn.getBoundingClientRect();
 
-  // We'll store the bounding rect of each "scrambled box" as we place them
-  // to ensure no overlap
+  // existing scrambled box rects
   let existingBoxRects = scrambledBoxes.map(b => b.getBoundingClientRect());
 
   while (!placed && attempts < MAX_ATTEMPTS) {
     attempts++;
 
-    // Ensure we don't go offscreen: x in [0..(window.innerWidth-boxWidth)], etc.
+    // x in [0..(window.innerWidth - boxWidth)], y in [0..(window.innerHeight - boxHeight)]
     const x = Math.floor(Math.random() * (window.innerWidth  - boxWidth));
     const y = Math.floor(Math.random() * (window.innerHeight - boxHeight));
 
-    // If it overlaps container
-    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, containerRect)) {
-      continue;
-    }
-    // If it overlaps yes button
-    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, yesRect)) {
-      continue;
-    }
-    // If it overlaps no button
-    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, noRect)) {
-      continue;
-    }
-    // If it overlaps any existing scrambled box
+    // Overlap checks
+    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, containerRect)) continue;
+    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, yesRect))       continue;
+    if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, noRect))        continue;
+
     let overlapFound = false;
     for (let r of existingBoxRects) {
       if (rectsOverlap({ x, y, w: boxWidth, h: boxHeight }, r)) {
@@ -265,11 +262,9 @@ function placeBoxRandomly(box, boxWidth, boxHeight) {
         break;
       }
     }
-    if (overlapFound) {
-      continue;
-    }
+    if (overlapFound) continue;
 
-    // If we get here, no overlap => place the box
+    // place the box
     box.style.left = x + 'px';
     box.style.top  = y + 'px';
     box.style.position = 'absolute';
@@ -278,10 +273,9 @@ function placeBoxRandomly(box, boxWidth, boxHeight) {
 }
 
 /**
- * rectsOverlap - generic function:
- *   rect1 => { x, y, w, h }
- *   rect2 => a DOMRect with left, top, right, bottom
- * Returns true if they overlap
+ * rectsOverlap - convenience for checking overlap 
+ * rect1 => { x, y, w, h }
+ * rect2 => a DOMRect with left, top, right, bottom
  */
 function rectsOverlap(rect1, rect2) {
   const left1   = rect1.x;
@@ -294,17 +288,24 @@ function rectsOverlap(rect1, rect2) {
   const top2    = rect2.top;
   const bottom2 = rect2.bottom;
 
-  // Overlap if horizontally and vertically intersect
   const overlapHoriz = (left1 < right2) && (right1 > left2);
   const overlapVert  = (top1 < bottom2) && (bottom1 > top2);
 
   return overlapHoriz && overlapVert;
 }
 
+/**
+ * scrambleTextIntoBox - 
+ *   modifies letterWidth, wordSpacing if mobile for smaller final layout
+ */
 function scrambleTextIntoBox(sentence, box) {
   const words = sentence.split(' ');
   const allLetters = [];
-  
+
+  // For smaller final text on mobile
+  const letterWidth = isMobileView() ? 7 : 10;
+  const wordSpacing = isMobileView() ? 3 : 5;
+
   words.forEach((word, wIndex) => {
     const letters = [...word];
     if (wIndex < words.length - 1) letters.push(" ");
@@ -315,22 +316,20 @@ function scrambleTextIntoBox(sentence, box) {
 
   let currentX = 10;
   let currentY = 20;
-  const letterWidth = 10;
-  const wordSpacing = 5;
 
   allLetters.forEach(obj => {
     const span = document.createElement('span');
     span.className = 'scrambled-letter';
     span.textContent = obj.char;
 
-    // random initial position (within box) for "scramble" effect
+    // random initial position
     const randX = Math.random() * 100;
     const randY = Math.random() * 30;
     const randomAngle = Math.random() * 60 - 30;
     span.style.transform = `translate(${randX}px, ${randY}px) rotate(${randomAngle}deg)`;
     span.style.opacity = '0.7';
 
-    // final unscrambled position
+    // final unscrambled positions
     obj.finalX = currentX;
     obj.finalY = currentY;
 
@@ -347,6 +346,10 @@ function scrambleTextIntoBox(sentence, box) {
   box.__isUnscrambled = false;
 }
 
+/**
+ * measureScrambledBoxWidth:
+ *   calculates how wide the unscrambled text wants to be
+ */
 function measureScrambledBoxWidth(box) {
   const allLetters = box.__letters || [];
   if (!allLetters.length) return 200;
@@ -357,9 +360,8 @@ function measureScrambledBoxWidth(box) {
 /****************************************************************
  * "YES" BUTTON
  * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short rose rain near the box).
- * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", do final alignment + rose rain
+ * 2) If all boxes unscrambled & heading is "Will you be My Valentines?",
+ *    final alignment + rose rain
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -377,7 +379,7 @@ function handleYesClick() {
     return;
   }
 
-  // CASE 2: All boxes unscrambled. 
+  // CASE 2: All boxes unscrambled
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
     handleFinalAlignment();
@@ -390,6 +392,7 @@ function startUnscrambleProcess() {
   const targetBox = scrambledBoxes[unscrambleIndex];
   unscrambleIndex++;
 
+  // Desktop logic remains unchanged
   document.body.style.backgroundColor = 'black';
 
   // Make sure happy GIF is visible
@@ -451,7 +454,7 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startRoseRainAroundBox - spawns short-lived rose images 
+ * startRoseRainAroundBox - spawns short-lived rose images
  * near the top of the given box for 'duration' ms
  */
 function startRoseRainAroundBox(box, duration) {
@@ -476,13 +479,12 @@ function startRoseRainAroundBox(box, duration) {
 }
 
 /**
- * spawnRose - 
- *  creates an <img> with local "rose.png"
- *  at a random x between xMin, xMax, top = yStart
+ * spawnRose:
+ *  uses local rose.png, falls for ~5s
  */
 function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
-  rose.src = 'rose.png';  // local rose image
+  rose.src = 'rose.png'; 
   rose.className = 'falling-rose';
 
   const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
@@ -502,8 +504,8 @@ function spawnRose({ xMin, xMax, yStart }) {
 /****************************************************************
  * FINAL ALIGNMENT:
  *   1) Screen -> black
- *   2) Boxes -> some distribution around .container
- *   3) Rose rain from top for 5s
+ *   2) Boxes -> 5 left, 5 right (for 10 boxes)
+ *   3) Full-screen rose rain for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
@@ -518,17 +520,13 @@ function handleFinalAlignment() {
   });
 }
 
-/**
- * alignBoxesLeftAndRightOfContainer:
- *   e.g. 5 on the left, 5 on the right for 10 total
- */
 function alignBoxesLeftAndRightOfContainer() {
-  console.log("Aligning boxes (5 left, 5 right) around .container...");
+  console.log("Aligning boxes around .container (5 left, 5 right)...");
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
   const spacing = 10;  
-  const boxHeight = 60;
+  const boxHeight = isMobileView() ? 40 : 60; // same mobile vs. desktop logic
 
   scrambledBoxes.forEach((box, i) => {
     const boxRect = box.getBoundingClientRect();
@@ -551,10 +549,6 @@ function alignBoxesLeftAndRightOfContainer() {
   });
 }
 
-/**
- * startRoseRainFullScreen - spawns rose images from top across entire screen
- * for 'duration' ms
- */
 function startRoseRainFullScreen(duration, callback) {
   console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
