@@ -165,8 +165,7 @@ function hexToRgb(hexColor) {
 }
 
 /****************************************************************
- * CREATE SIX SCRAMBLED BOXES
- * (They start off wherever you want: randomly or aligned)
+ * CREATE SIX SCRAMBLED BOXES (START OFF RANDOM)
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -197,7 +196,7 @@ function createAllScrambledBoxes() {
     box.style.width = neededWidth + 'px';
     box.style.height = '60px';
 
-    // For example, place them randomly at first:
+    // Place them randomly at first
     placeBoxRandomly(box, mainContainer, neededWidth, 60);
 
     document.body.appendChild(box);
@@ -297,9 +296,10 @@ function measureScrambledBoxWidth(box) {
 /****************************************************************
  * "YES" BUTTON
  * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short rose rain near the box).
+ *    (with short flower rain near the box).
  * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", then final alignment.
+ *    "Will you be My Valentines?", line them up 3 left / 3 right 
+ *    next to the .container, then do a full-screen flower rain.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -360,8 +360,8 @@ function unscrambleBoxWithRoses(box, onDone) {
   }
   box.__isUnscrambled = true;
 
-  console.log("Starting rose rain around unscrambling box.");
-  startRoseRainAroundBox(box, 2500);
+  console.log("Starting flower rain around unscrambling box.");
+  startFlowerRainAroundBox(box, 2500);
 
   const allLetters = box.__letters;
   const wordsCount = 1 + Math.max(...allLetters.map(l => l.wordIndex));
@@ -391,22 +391,22 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startRoseRainAroundBox - spawns short-lived rose images 
+ * startFlowerRainAroundBox - spawns short-lived flower images 
  * near the top of the given box for 'duration' ms
  */
-function startRoseRainAroundBox(box, duration) {
-  console.log("startRoseRainAroundBox for " + duration + "ms");
+function startFlowerRainAroundBox(box, duration) {
+  console.log("startFlowerRainAroundBox for " + duration + "ms");
   const endTime = Date.now() + duration;
   const rect = box.getBoundingClientRect();
 
   (function frame() {
     const now = Date.now();
     if (now >= endTime) {
-      console.log("Rose rain around box ended.");
+      console.log("Flower rain around box ended.");
       return;
     }
 
-    spawnRose({
+    spawnFlower({
       xMin: rect.left,
       xMax: rect.right,
       yStart: rect.top - 30
@@ -416,28 +416,30 @@ function startRoseRainAroundBox(box, duration) {
 }
 
 /**
- * spawnRose - 
- *  creates an <img> with your *external* PNG file
+ * spawnFlower - 
+ *  uses an external flower image from a library (Pixabay, etc.)
  *  at a random x between xMin, xMax, and top = yStart 
- *  uses .falling-rose CSS 
+ *  uses .falling-rose CSS for the falling animation
  */
-function spawnRose({ xMin, xMax, yStart }) {
-  const rose = document.createElement('img');
-  // Use your own PNG file:
-  rose.src = 'rose.png';  // or './images/rose.png' if in a subfolder, etc.
-
-  rose.className = 'falling-rose';
+function spawnFlower({ xMin, xMax, yStart }) {
+  const flower = document.createElement('img');
+  
+  // Example: a rose PNG from Pixabay's CDN (free image)
+  // Replace with any other direct image URL you prefer
+  flower.src = "https://cdn.pixabay.com/photo/2016/10/25/12/28/rose-1764527_960_720.png";
+  
+  flower.className = 'falling-rose';
 
   const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
-  rose.style.left = xPos + 'px';
-  rose.style.top  = yStart + 'px';
+  flower.style.left = xPos + 'px';
+  flower.style.top  = yStart + 'px';
 
-  document.body.appendChild(rose);
+  document.body.appendChild(flower);
 
   // remove after animation (~5s)
   setTimeout(() => {
-    if (rose.parentNode) {
-      rose.parentNode.removeChild(rose);
+    if (flower.parentNode) {
+      flower.parentNode.removeChild(flower);
     }
   }, 5000);
 }
@@ -446,17 +448,17 @@ function spawnRose({ xMin, xMax, yStart }) {
  * FINAL ALIGNMENT:
  *   1) Screen -> black
  *   2) Boxes -> 3 on left, 3 on right of .container
- *   3) Roses from full screen top for 5s
+ *   3) Full-screen flower rain for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  console.log("handleFinalAlignment => screen black, line up boxes left/right, rain roses.");
+  console.log("handleFinalAlignment => screen black, line up boxes left/right, flower rain.");
   document.body.style.backgroundColor = 'black';
 
   alignBoxesLeftAndRightOfContainer();
 
-  startRoseRainFullScreen(5000, () => {
-    console.log("Full-screen rose rain done. Return to pink.");
+  startFlowerRainFullScreen(5000, () => {
+    console.log("Full-screen flower rain done. Return to pink.");
     document.body.style.backgroundColor = originalBodyColor;
   });
 }
@@ -493,10 +495,11 @@ function alignBoxesLeftAndRightOfContainer() {
 }
 
 /**
- * startRoseRainFullScreen - spawns roses from top for 'duration' ms
+ * startFlowerRainFullScreen - spawns flower images from the top 
+ * for 'duration' ms across the entire screen
  */
-function startRoseRainFullScreen(duration, callback) {
-  console.log(`startRoseRainFullScreen for ${duration}ms`);
+function startFlowerRainFullScreen(duration, callback) {
+  console.log(`startFlowerRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
 
   (function frame() {
@@ -507,7 +510,7 @@ function startRoseRainFullScreen(duration, callback) {
     }
 
     for (let i = 0; i < 3; i++) {
-      spawnRose({ 
+      spawnFlower({ 
         xMin: 0, 
         xMax: window.innerWidth, 
         yStart: -60 
