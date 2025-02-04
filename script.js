@@ -296,9 +296,10 @@ function measureScrambledBoxWidth(box) {
 /****************************************************************
  * "YES" BUTTON
  * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short CONFETTI near the box).
+ *    (with short rose rain near the box).
  * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", do fireworks + final alignment.
+ *    "Will you be My Valentines?", line them up 3 left / 3 right 
+ *    next to the .container, then do a full-screen rose rain.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -335,7 +336,7 @@ function startUnscrambleProcess() {
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
-  unscrambleBoxWithConfetti(targetBox, () => {
+  unscrambleBoxWithRoses(targetBox, () => {
     // After unscramble
     document.body.style.backgroundColor = originalBodyColor;
 
@@ -352,18 +353,15 @@ function startUnscrambleProcess() {
   });
 }
 
-/**
- * Instead of a "rose rain," do a confetti burst near the unscrambling box.
- */
-function unscrambleBoxWithConfetti(box, onDone) {
+function unscrambleBoxWithRoses(box, onDone) {
   if (box.__isUnscrambled) {
     if (onDone) onDone();
     return;
   }
   box.__isUnscrambled = true;
 
-  console.log("Starting confetti bursts around unscrambling box.");
-  startConfettiBurstsAroundBox(box, 2500);
+  console.log("Starting rose rain around unscrambling box.");
+  startRoseRainAroundBox(box, 2500);
 
   const allLetters = box.__letters;
   const wordsCount = 1 + Math.max(...allLetters.map(l => l.wordIndex));
@@ -393,65 +391,86 @@ function unscrambleBoxWithConfetti(box, onDone) {
 }
 
 /**
- * startConfettiBurstsAroundBox:
- *   Creates short-lived confetti bursts near the top of the box for 'duration' ms
- *   Using the canvas-confetti library.
+ * startRoseRainAroundBox - spawns short-lived rose images 
+ * near the top of the given box for 'duration' ms
  */
-function startConfettiBurstsAroundBox(box, duration) {
-  console.log("startConfettiBurstsAroundBox for " + duration + "ms");
+function startRoseRainAroundBox(box, duration) {
+  console.log("startRoseRainAroundBox for " + duration + "ms");
   const endTime = Date.now() + duration;
   const rect = box.getBoundingClientRect();
 
   (function frame() {
     const now = Date.now();
     if (now >= endTime) {
-      console.log("Confetti bursts done.");
+      console.log("Rose rain around box ended.");
       return;
     }
 
-    // Random x in [rect.left, rect.right], near top
-    const xPos = (Math.random() * (rect.right - rect.left) + rect.left) / window.innerWidth;
-    const yPos = (rect.top - 30) / window.innerHeight;
-    
-    // Launch a confetti burst from (xPos, yPos)
-    confetti({
-      origin: { x: xPos, y: yPos },
-      particleCount: 10,
-      spread: 55,
-      startVelocity: 25,
+    spawnRose({
+      xMin: rect.left,
+      xMax: rect.right,
+      yStart: rect.top - 30
     });
-
     requestAnimationFrame(frame);
   })();
 }
 
+/**
+ * spawnRose - 
+ *  creates an <img> with your local "rose.png" 
+ *  at a random x between xMin, xMax, and top = yStart 
+ *  uses .falling-rose CSS 
+ */
+function spawnRose({ xMin, xMax, yStart }) {
+  const rose = document.createElement('img');
+  // Use your local rose.png (same folder)
+  rose.src = 'rose.png'; 
+
+  rose.className = 'falling-rose';
+
+  const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
+  rose.style.left = xPos + 'px';
+  rose.style.top  = yStart + 'px';
+
+  document.body.appendChild(rose);
+
+  // remove after animation (~5s)
+  setTimeout(() => {
+    if (rose.parentNode) {
+      rose.parentNode.removeChild(rose);
+    }
+  }, 5000);
+}
+
 /****************************************************************
- * FINAL ALIGNMENT => Fireworks from the fireworks-js library
+ * FINAL ALIGNMENT:
  *   1) Screen -> black
- *   2) Boxes => 3 on left, 3 on right of .container
- *   3) Launch fireworks for 5s
+ *   2) Boxes -> 3 on left, 3 on right of .container
+ *   3) Rose rain from top for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  console.log("handleFinalAlignment => screen black, line up boxes, fireworks.");
+  console.log("handleFinalAlignment => screen black, line up boxes left/right, rose rain.");
   document.body.style.backgroundColor = 'black';
 
   alignBoxesLeftAndRightOfContainer();
 
-  startFireworks(5000, () => {
-    console.log("Fireworks done. Return to pink.");
+  startRoseRainFullScreen(5000, () => {
+    console.log("Full-screen rose rain done. Return to pink.");
     document.body.style.backgroundColor = originalBodyColor;
   });
 }
 
 /**
- * Align the 6 boxes: indices 0..2 on the left, 3..5 on the right
+ * Place the 6 boxes so that:
+ *  - indices 0..2 on the left side of .container, stacked vertically
+ *  - indices 3..5 on the right side of .container, stacked vertically
  */
 function alignBoxesLeftAndRightOfContainer() {
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
-  // We'll assume each box ~60px tall, with 10px spacing
+  // We'll assume each box is ~60px tall, with 10px spacing
   const spacing = 10;  
   const boxHeight = 60;
 
@@ -474,41 +493,27 @@ function alignBoxesLeftAndRightOfContainer() {
 }
 
 /**
- * startFireworks - runs fireworks effect for 'duration' ms 
- * using the Fireworks.js library
+ * startRoseRainFullScreen - spawns rose images from the top 
+ * for 'duration' ms across the entire screen
  */
-function startFireworks(duration, callback) {
-  console.log(`startFireworks for ${duration}ms`);
+function startRoseRainFullScreen(duration, callback) {
+  console.log(`startRoseRainFullScreen for ${duration}ms`);
+  const endTime = Date.now() + duration;
 
-  // Create a fireworks instance attached to the entire body
-  const container = document.body;
-  const fireworks = new Fireworks(container, {
-    /* example config options; tweak as you like */
-    hue: { min: 0, max: 345 },
-    delay: { min: 15, max: 15 },
-    speed: 3,
-    acceleration: 1.05,
-    friction: 0.95,
-    gravity: 1.5,
-    particles: 100,
-    trace: 3,
-    explosion: 5,
-    boundaries: {
-      x: 50,
-      y: 50,
-      width: container.clientWidth - 100,
-      height: container.clientHeight - 100
-    },
-    sound: {
-      enable: false
+  (function frame() {
+    const now = Date.now();
+    if (now >= endTime) {
+      if (callback) callback();
+      return;
     }
-  });
 
-  fireworks.start();
-
-  // Stop fireworks after 'duration' ms
-  setTimeout(() => {
-    fireworks.stop();
-    if (callback) callback();
-  }, duration);
+    for (let i = 0; i < 3; i++) {
+      spawnRose({ 
+        xMin: 0, 
+        xMax: window.innerWidth, 
+        yStart: -60 
+      });
+    }
+    requestAnimationFrame(frame);
+  })();
 }
