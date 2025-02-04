@@ -506,7 +506,7 @@ function startRoseRainFullScreen(duration, callback) {
       if (callback) callback();
       return;
     }
-
+a
     for (let i = 0; i < 3; i++) {
       spawnRose({ 
         xMin: 0, 
