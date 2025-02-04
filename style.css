@@ -93,7 +93,7 @@ button {
   border-radius: 10px;
 }
 
-/* --- The 6 scrambled boxes --- */
+/* --- The 6 (or more) scrambled boxes --- */
 .scrambled-box {
   position: absolute;
   background-color: #f3f3f3;
@@ -141,5 +141,37 @@ button {
   100% {
     transform: translateY(110vh) rotate(360deg);
     opacity: 0.5;
+  }
+}
+
+/* --- MOBILE-FRIENDLY SCALING (max-width: 600px) --- */
+@media (max-width: 600px) {
+  /* Make the container narrower, reduce padding/text-size so it fits better */
+  .container {
+    max-width: 95%;
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .buttons button {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+
+  #message {
+    font-size: 16px;
+  }
+
+  .scrambled-box {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  .scrambled-letter {
+    font-size: 12px;
   }
 }
