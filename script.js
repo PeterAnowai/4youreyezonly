@@ -165,7 +165,8 @@ function hexToRgb(hexColor) {
 }
 
 /****************************************************************
- * CREATE SIX SCRAMBLED BOXES (START OFF RANDOM)
+ * CREATE SIX SCRAMBLED BOXES
+ * (They start off wherever you want: randomly or aligned)
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -196,7 +197,7 @@ function createAllScrambledBoxes() {
     box.style.width = neededWidth + 'px';
     box.style.height = '60px';
 
-    // Place them randomly at first
+    // For example, place them randomly at first:
     placeBoxRandomly(box, mainContainer, neededWidth, 60);
 
     document.body.appendChild(box);
@@ -204,11 +205,6 @@ function createAllScrambledBoxes() {
   });
 }
 
-/**
- * placeBoxRandomly - tries to find a random x,y so that:
- *   1) The box is fully within the window
- *   2) Doesn't overlap .container
- */
 function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
   const MAX_ATTEMPTS = 100;
   let attempts = 0;
@@ -222,7 +218,6 @@ function placeBoxRandomly(box, mainContainer, boxWidth, boxHeight) {
     const containerRect = mainContainer.getBoundingClientRect();
     if (rectsOverlap(x, y, boxWidth, boxHeight, containerRect)) continue;
 
-    // no overlap => place the box
     box.style.left = x + 'px';
     box.style.top  = y + 'px';
     box.style.position = 'absolute';
@@ -269,7 +264,7 @@ function scrambleTextIntoBox(sentence, box) {
     span.className = 'scrambled-letter';
     span.textContent = obj.char;
 
-    // random initial position for scramble effect
+    // random initial position
     const randX = Math.random() * 100;
     const randY = Math.random() * 30;
     const randomAngle = Math.random() * 60 - 30;
@@ -301,9 +296,10 @@ function measureScrambledBoxWidth(box) {
 
 /****************************************************************
  * "YES" BUTTON
- * 1) If not all boxes unscrambled, unscramble the next one.
- * 2) If all boxes unscrambled and heading is "Will you be My Valentines?",
- *    line them up 3 left / 3 right next to .container, then rose rain.
+ * 1) If not all boxes unscrambled, unscramble the next one 
+ *    (with short rose rain near the box).
+ * 2) If all boxes unscrambled and heading is 
+ *    "Will you be My Valentines?", then final alignment.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -421,14 +417,15 @@ function startRoseRainAroundBox(box, duration) {
 
 /**
  * spawnRose - 
- *  creates an <img> with inline base64 "rose" 
+ *  creates an <img> with your *external* PNG file
  *  at a random x between xMin, xMax, and top = yStart 
  *  uses .falling-rose CSS 
  */
 function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
-  // inline base64 rose PNG to avoid external links
-  rose.src = RENDER_ROSE_BASE64;
+  // Use your own PNG file:
+  rose.src = 'rose.png';  // or './images/rose.png' if in a subfolder, etc.
+
   rose.className = 'falling-rose';
 
   const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
@@ -519,9 +516,3 @@ function startRoseRainFullScreen(duration, callback) {
     requestAnimationFrame(frame);
   })();
 }
-
-/****************************************************************
- * Our Inline Base64 Rose Image
- ****************************************************************/
-const RENDER_ROSE_BASE64 = 
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAqCAYAAAB/YiEDAAAACXBIWXMAABYlAAAWJQFJUiTwAAACD0lEQVRYhe3XP2hTYRTG8ZdOGvAHaSN7DWUWA3WYuMeRDYiG6iFuJF4AkjQ3rIOLOHRAUa6CXYxUNhKUHkQEv9Dx5E0nvbj7KRnX66tyV+jrpvb/N2+939253/O/KiO6zhMG/Ze0Jqe3vjQZWguob31D59R+9EWOiNIlaRSIXONbdAW4GNLhXnUFou0EquB6my3kvXKSfGE/vxzUUQdFv5enbFRPVrSfRAKMLOiygd0twB8o4kssoNBQr3DyO93zN1wM2mvJJPDpnr/hzqg4odrXwNy9WdP5G0asNxK7jWTUzWpWJspqnMDqLxkRtrt9VDFSTvnw6kl7nOVZaq12mylg92UH7Mdq7w/Pp4zSCmwqHNU+G2dhZ5Dv5E09tWBHt1mXCxWPaZMVntMG9oRPEwNu1T/IVYI1EhgqHzY5GKKEGyd/j08pthYKCeaY3XhEjsMRuIURdJpUzpNrc3VTbnP4ryA1NmqU4rpGKn7r8bnWBqcxHaXfug05MR+ifCUPul2cxVt+o7er8VVUJFDxc98+c++KBDZz2LgRrXSlDSYkZMJu04rcrFK7c+S476u7LDp1Zrc+pAbpWZI9l4IOqEGykk+KC/lfJbPnQnXs2n9JacYVKUUpA99L2Y1uS6300bNX2pLnK/FZbl+SERk67uv1+8aOyODZE9ptXUtZBcoJ1NWXDJ0ERdBo+31dl0W7U3etNwqSjo1mT/nT30NFonFqX3e6KNhm9JO/DYLcLf+YG7yX19OWQEjG1BzKCt9ARdKLy0pH1nAgAAAABJRU5ErkJggg==";
