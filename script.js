@@ -294,11 +294,12 @@ function measureScrambledBoxWidth(box) {
 }
 
 /****************************************************************
- * "YES" BUTTON:
- * 1) Fireworks each time "Yes" is clicked
- * 2) If not all boxes unscrambled, unscramble next one 
- * 3) If all boxes unscrambled and heading is "Will you be My Valentines?",
- *    do final alignment + bigger fireworks
+ * "YES" BUTTON
+ * 1) If not all boxes unscrambled, unscramble the next one 
+ *    (with short rose rain near the box).
+ * 2) If all boxes unscrambled and heading is 
+ *    "Will you be My Valentines?", line them up 3 left / 3 right 
+ *    next to the .container, then do a full-screen rose rain.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -306,9 +307,6 @@ function handleYesClick() {
   console.log("Yes button clicked.");
   confettiSound.currentTime = 0;
   confettiSound.play().catch(e => console.log(e));
-
-  // Always do a short fireworks show on "Yes" click
-  startFireworks(2000); // 2-second fireworks
 
   const heading = document.querySelector('h1');
 
@@ -338,7 +336,7 @@ function startUnscrambleProcess() {
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
-  unscrambleBoxWithFireworks(targetBox, () => {
+  unscrambleBoxWithRoses(targetBox, () => {
     // After unscramble
     document.body.style.backgroundColor = originalBodyColor;
 
@@ -355,20 +353,15 @@ function startUnscrambleProcess() {
   });
 }
 
-/****************************************************************
- * unscrambleBoxWithFireworks:
- *   unscrambles the letters for that box in "word by word" fashion
- *   while doing a short local fireworks show (2 seconds).
- ****************************************************************/
-function unscrambleBoxWithFireworks(box, onDone) {
+function unscrambleBoxWithRoses(box, onDone) {
   if (box.__isUnscrambled) {
     if (onDone) onDone();
     return;
   }
   box.__isUnscrambled = true;
 
-  console.log("Starting short fireworks for unscrambling box.");
-  startFireworks(2000); // 2-second fireworks show
+  console.log("Starting rose rain around unscrambling box.");
+  startRoseRainAroundBox(box, 2500);
 
   const allLetters = box.__letters;
   const wordsCount = 1 + Math.max(...allLetters.map(l => l.wordIndex));
@@ -382,7 +375,6 @@ function unscrambleBoxWithFireworks(box, onDone) {
       return;
     }
 
-    // "Unscramble" one word at a time
     const wordLetters = allLetters.filter(l => l.wordIndex === currentWordIndex);
     wordLetters.forEach(letterObj => {
       letterObj.span.style.transform = `translate(${letterObj.finalX}px, ${letterObj.finalY}px) rotate(0deg)`;
@@ -398,93 +390,91 @@ function unscrambleBoxWithFireworks(box, onDone) {
   animateNextWord();
 }
 
-/****************************************************************
- * SHORT / LONG FIREWORKS SHOW
- ****************************************************************/
-let fireworksInstance = null;
+/**
+ * startRoseRainAroundBox - spawns short-lived rose images 
+ * near the top of the given box for 'duration' ms
+ */
+function startRoseRainAroundBox(box, duration) {
+  console.log("startRoseRainAroundBox for " + duration + "ms");
+  const endTime = Date.now() + duration;
+  const rect = box.getBoundingClientRect();
+
+  (function frame() {
+    const now = Date.now();
+    if (now >= endTime) {
+      console.log("Rose rain around box ended.");
+      return;
+    }
+
+    spawnRose({
+      xMin: rect.left,
+      xMax: rect.right,
+      yStart: rect.top - 30
+    });
+    requestAnimationFrame(frame);
+  })();
+}
 
 /**
- * startFireworks(duration) - runs a fireworks display for 'duration' ms 
- * using the Fireworks.js library. 
+ * spawnRose - 
+ *  creates an <img> with your local "rose.png"
+ *  at a random x between xMin, xMax, and top = yStart 
+ *  uses .falling-rose CSS 
  */
-function startFireworks(duration) {
-  console.log(`startFireworks for ${duration}ms`);
+function spawnRose({ xMin, xMax, yStart }) {
+  const rose = document.createElement('img');
+  // Use your local rose.png (same folder)
+  rose.src = 'rose.png'; 
 
-  // If we already have an instance, stop it
-  if (fireworksInstance) {
-    fireworksInstance.stop();
-    fireworksInstance = null;
-  }
+  rose.className = 'falling-rose';
 
-  // Create a fireworks instance attached to the entire <body>
-  const container = document.body;
-  fireworksInstance = new Fireworks(container, {
-    speed: 3,
-    acceleration: 1.05,
-    friction: 0.95,
-    gravity: 1.5,
-    particles: 60,
-    trace: 3,
-    explosion: 5,
-    boundaries: {
-      x: 50,
-      y: 50,
-      width: container.clientWidth - 100,
-      height: container.clientHeight - 100
-    },
-    sound: { enable: false }
-  });
+  const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
+  rose.style.left = xPos + 'px';
+  rose.style.top  = yStart + 'px';
 
-  fireworksInstance.start();
+  document.body.appendChild(rose);
 
-  // Stop fireworks after 'duration' ms
+  // remove after animation (~5s)
   setTimeout(() => {
-    if (fireworksInstance) {
-      fireworksInstance.stop();
-      fireworksInstance = null;
+    if (rose.parentNode) {
+      rose.parentNode.removeChild(rose);
     }
-  }, duration);
+  }, 5000);
 }
 
 /****************************************************************
- * FINAL ALIGNMENT (heading => "Will you be My Valentines?")
+ * FINAL ALIGNMENT:
  *   1) Screen -> black
  *   2) Boxes -> 3 on left, 3 on right of .container
- *   3) 5-second fireworks show
+ *   3) Rose rain from top for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  console.log("handleFinalAlignment => black screen, line up boxes, big fireworks show.");
+  console.log("handleFinalAlignment => screen black, line up boxes left/right, rose rain.");
   document.body.style.backgroundColor = 'black';
 
   alignBoxesLeftAndRightOfContainer();
 
-  // bigger fireworks show for 5s
-  startFireworks(5000);
-
-  // after 5s, revert color
-  setTimeout(() => {
+  startRoseRainFullScreen(5000, () => {
+    console.log("Full-screen rose rain done. Return to pink.");
     document.body.style.backgroundColor = originalBodyColor;
-  }, 5000);
+  });
 }
 
-/**
- * alignBoxesLeftAndRightOfContainer:
- *   - 3 boxes on left of .container
- *   - 3 boxes on right
- */
 function alignBoxesLeftAndRightOfContainer() {
+  console.log("Aligning boxes (3 left, 3 right) around .container...");
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
+  // We'll assume each box is ~60px tall, with 10px spacing
   const spacing = 10;  
-  const boxHeight = 60; // each box is ~60px tall
+  const boxHeight = 60;
 
   scrambledBoxes.forEach((box, i) => {
     const boxRect = box.getBoundingClientRect();
     const boxWidth = boxRect.width;
 
-    // for i in [0..2], place left; for i in [3..5], place right
+    // For i in [0..2], place left; for i in [3..5], place right
     const colIndex = i < 3 ? i : i - 3;
 
     const leftCoord = i < 3 
@@ -498,10 +488,6 @@ function alignBoxesLeftAndRightOfContainer() {
   });
 }
 
-/**
- * startRoseRainFullScreen - spawns rose images from the top 
- * for 'duration' ms across the entire screen
- */
 function startRoseRainFullScreen(duration, callback) {
   console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;

@@ -115,3 +115,31 @@ button {
   color: #333;
   font-size: 14px;
 }
+
+/* 
+   Rose images that we create for the "falling roses" 
+   We'll animate them with keyframes or via absolute positioning
+*/
+.falling-rose {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none; 
+  z-index: 999;       
+  animation: roseFall 5s linear forwards;
+  /* 
+    5s ensures the rose travels from just above the screen 
+    to beyond the bottom 
+  */
+}
+
+@keyframes roseFall {
+  0% {
+    transform: translateY(-60px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0.5;
+  }
+}
