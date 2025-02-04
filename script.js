@@ -200,24 +200,20 @@ function createAllScrambledBoxes() {
     box.style.width = boxWidth + 'px';
     box.style.height = boxHeight + 'px';
 
-    // Figure out left/right columns
-    // First 3 go on the left side, next 3 on the right side
-    let boxX, boxY;
-    const spacing = 10; // vertical space between boxes
+    // The initial (left vs right) alignment is done here
+    // 3 left, 3 right (but can be changed if you like):
+    const spacing = 10; 
     if (i < 3) {
-      // Left column
-      boxX = containerRect.left - boxWidth - 20; 
-      boxY = containerRect.top + (i * (boxHeight + spacing));
+      // left column
+      box.style.left = (containerRect.left - boxWidth - 20) + "px";
+      box.style.top  = (containerRect.top + i * (boxHeight + spacing)) + "px";
     } else {
-      // Right column
+      // right column
       const colIndex = i - 3;
-      boxX = containerRect.right + 20; 
-      boxY = containerRect.top + (colIndex * (boxHeight + spacing));
+      box.style.left = (containerRect.right + 20) + "px";
+      box.style.top  = (containerRect.top + colIndex * (boxHeight + spacing)) + "px";
     }
 
-    // Absolute positioning at computed coordinates
-    box.style.left = boxX + 'px';
-    box.style.top  = boxY + 'px';
     box.style.position = 'absolute';
 
     document.body.appendChild(box);
@@ -282,8 +278,8 @@ function measureScrambledBoxWidth(box) {
  * 1) If not all boxes unscrambled, unscramble the next one 
  *    (with short rose rain near the box).
  * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", line them up vertically 
- *    and drop roses from top for ~5s.
+ *    "Will you be My Valentines?", line them up 3 left / 3 right 
+ *    beside the .container, then do rose rain.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -302,7 +298,7 @@ function handleYesClick() {
   }
 
   // CASE 2: All boxes unscrambled. If heading is "Will you be My Valentines?", 
-  // do final alignment + rose rain from top
+  // do final alignment + rose rain
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
     handleFinalAlignment();
@@ -429,15 +425,15 @@ function spawnRose({ xMin, xMax, yStart }) {
 /****************************************************************
  * FINAL ALIGNMENT:
  *   1) Screen -> black
- *   2) Boxes -> vertical stack under GIF
+ *   2) Boxes -> 3 on left, 3 on right of .container
  *   3) Roses from full screen top for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  console.log("handleFinalAlignment => screen black, line up boxes, rain roses.");
+  console.log("handleFinalAlignment => screen black, line up boxes left/right, rain roses.");
   document.body.style.backgroundColor = 'black';
 
-  alignBoxesVerticallyUnderGif();
+  alignBoxesLeftAndRightOfContainer();
 
   startRoseRainFullScreen(5000, () => {
     console.log("Full-screen rose rain done. Return to pink.");
@@ -445,26 +441,39 @@ function handleFinalAlignment() {
   });
 }
 
-function alignBoxesVerticallyUnderGif() {
-  console.log("Aligning boxes vertically under GIF...");
-  const gifRect = gifContainer.getBoundingClientRect();
-  const startY = gifRect.bottom + 20; 
-  const centerX = window.innerWidth / 2;
-  let currentY = startY;
+/**
+ * Place the 6 boxes so that:
+ *  - indices 0..2 on the left side of .container, stacked vertically
+ *  - indices 3..5 on the right side of .container, stacked vertically
+ */
+function alignBoxesLeftAndRightOfContainer() {
+  const mainContainer = document.querySelector('.container');
+  const containerRect = mainContainer.getBoundingClientRect();
 
-  scrambledBoxes.forEach(box => {
+  // We'll assume each box is 60px high + ~10px spacing as before
+  const spacing = 10;  
+  const boxHeight = 60; // each scrambled-box is 60px
+
+  scrambledBoxes.forEach((box, i) => {
     const boxRect = box.getBoundingClientRect();
     const boxWidth = boxRect.width;
 
-    const left = centerX - (boxWidth / 2);
+    const colIndex = i < 3 ? i : i - 3;
 
-    box.style.left = left + 'px';
-    box.style.top  = currentY + 'px';
+    const leftCoord = i < 3
+      ? containerRect.left - (boxWidth + 20)   // left side
+      : containerRect.right + 20;             // right side
 
-    currentY += (boxRect.height + 10);
+    const topCoord  = containerRect.top + colIndex * (boxHeight + spacing);
+
+    box.style.left = leftCoord + 'px';
+    box.style.top  = topCoord  + 'px';
   });
 }
 
+/**
+ * startRoseRainFullScreen - spawns roses from top for 'duration' ms
+ */
 function startRoseRainFullScreen(duration, callback) {
   console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
@@ -476,6 +485,7 @@ function startRoseRainFullScreen(duration, callback) {
       return;
     }
 
+    // Each frame, spawn a few roses at random x across the entire screen
     for (let i = 0; i < 3; i++) {
       spawnRose({ 
         xMin: 0, 
