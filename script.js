@@ -26,13 +26,7 @@ const message        = document.getElementById('message');
 const gifContainer   = document.getElementById('gif-container');
 const confettiSound  = document.getElementById('confetti-sound');
 
-/* Store the original position of No button so we can reset it later */
-const noBtnInitialPosition = {
-  left: noBtn.offsetLeft,
-  top:  noBtn.offsetTop
-};
-
-/* For the background color transitions */
+/* For background color transitions */
 let originalBodyColor = '#ffebee'; // the pink
 document.body.style.backgroundColor = originalBodyColor;
 
@@ -48,25 +42,20 @@ const noMessages = [
 let currentMessageIndex = 0;
 
 /****************************************************************
- * NO BUTTON FUNCTIONALITY
+ * NO BUTTON LOGIC
  ****************************************************************/
 noBtn.addEventListener('click', handleNoClick);
 
 function handleNoClick() {
-  console.log("No button clicked.");
   message.textContent = noMessages[currentMessageIndex];
   currentMessageIndex = (currentMessageIndex + 1) % noMessages.length;
 
-  // Darken background slightly
   darkenBackground();
 
   // Show sad GIF
   gifContainer.innerHTML = `<img src="${SAD_GIF_URL}" alt="Sad Mocha Bear GIF">`;
   gifContainer.style.opacity = 1; 
-
-  setTimeout(() => {
-    gifContainer.style.opacity = 0; 
-  }, 3000);
+  setTimeout(() => { gifContainer.style.opacity = 0; }, 3000);
 
   // Switch to fixed for free movement
   noBtn.style.position = 'fixed';
@@ -75,12 +64,12 @@ function handleNoClick() {
   // Immediately move
   moveNoButton();
 
-  // Keep moving for 5 seconds
+  // Keep moving for 5s
   const movementInterval = setInterval(() => {
     moveNoButton();
   }, 600);
 
-  // Clear the message & stop movement after 5s
+  // Clear message & stop movement after 5s
   setTimeout(() => {
     message.textContent = '';
     clearInterval(movementInterval);
@@ -95,20 +84,17 @@ function resetNoButtonPosition() {
 }
 
 function darkenBackground() {
-  let [r, g, b] = hexToRgb(document.body.style.backgroundColor) || [255, 235, 238];
+  let [r,g,b] = hexToRgb(document.body.style.backgroundColor) || [255,235,238];
   r = Math.max(r - 20, 0);
   g = Math.max(g - 20, 0);
   b = Math.max(b - 20, 0);
   document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 }
 
-/**
- * Randomly moves the "No" button (during the 5-second scramble).
- */
 function moveNoButton() {
   const buttonWidth  = noBtn.offsetWidth;
   const buttonHeight = noBtn.offsetHeight;
-  const maxX = window.innerWidth  - buttonWidth;
+  const maxX = window.innerWidth - buttonWidth;
   const maxY = window.innerHeight - buttonHeight;
 
   const containerRect = document.querySelector('.container').getBoundingClientRect();
@@ -139,9 +125,9 @@ function doesOverlap(x, y, width, height, containerRect) {
   const buttonBottom = y + height;
 
   const containerLeft   = containerRect.left;
-  const containerRight  = containerRect.left + containerRect.width;
+  const containerRight  = containerRect.right;
   const containerTop    = containerRect.top;
-  const containerBottom = containerRect.top + containerRect.height;
+  const containerBottom = containerRect.bottom;
 
   const overlapHoriz = (buttonLeft < containerRight) && (buttonRight > containerLeft);
   const overlapVert  = (buttonTop < containerBottom) && (buttonBottom > containerTop);
@@ -155,8 +141,9 @@ function hexToRgb(hexColor) {
     const g = parseInt(hexColor.slice(3,5), 16);
     const b = parseInt(hexColor.slice(5,7), 16);
     return [r,g,b];
-  } else if (hexColor.startsWith('rgb')) {
-    const match = hexColor.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+  }
+  else if (hexColor.startsWith('rgb')) {
+    const match = hexColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
     if (match) {
       return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
     }
@@ -165,10 +152,7 @@ function hexToRgb(hexColor) {
 }
 
 /****************************************************************
- * CREATE SCRAMBLED BOXES
- *   (Preserves the existing logic for mobile/desktop sizing 
- *    from your previous version if you had it. 
- *    If you only had a single size, keep that.)
+ * CREATE THE SCRAMBLED BOXES (MOBILE vs DESKTOP)
  ****************************************************************/
 const scrambledTexts = [
   "You are beautiful",
@@ -184,24 +168,29 @@ const scrambledTexts = [
 ];
 
 let scrambledBoxes = [];
-let unscrambleIndex = 0; // which box unscrambles next
+let unscrambleIndex = 0;
+
+// Determine mobile vs. desktop
+function isMobileView() {
+  return window.innerWidth < 600;
+}
 
 window.addEventListener('load', createAllScrambledBoxes);
 
 function createAllScrambledBoxes() {
-  console.log("Creating scrambled boxes...");
   scrambledTexts.forEach(sentence => {
     const box = document.createElement('div');
     box.className = 'scrambled-box';
-
     scrambleTextIntoBox(sentence, box);
 
-    // If you have special mobile logic, preserve it. 
-    // Otherwise, height=60 is typical for each box
-    const boxHeight = 60;
-    const boxWidth  = measureScrambledBoxWidth(box);
+    // Desktop => 60px, Mobile => 40px
+    const boxHeight = isMobileView() ? 40 : 60;
+    const neededWidth = measureScrambledBoxWidth(box);
+    const boxWidth  = isMobileView()
+      ? Math.floor(neededWidth * 0.8) // shrink 20% on mobile
+      : neededWidth;
 
-    box.style.width  = boxWidth  + 'px';
+    box.style.width  = boxWidth + 'px';
     box.style.height = boxHeight + 'px';
 
     placeBoxRandomly(box, boxWidth, boxHeight);
@@ -211,11 +200,10 @@ function createAllScrambledBoxes() {
 }
 
 /**
- * placeBoxRandomly - ensures no overlap 
- * with container, yes/no, other boxes, or screen edges
+ * placeBoxRandomly => no overlap with container, yes/no, other boxes
  */
 function placeBoxRandomly(box, boxWidth, boxHeight) {
-  const MAX_ATTEMPTS = 200; 
+  const MAX_ATTEMPTS = 200;
   let attempts = 0;
   let placed   = false;
 
@@ -223,7 +211,7 @@ function placeBoxRandomly(box, boxWidth, boxHeight) {
   const yesRect = yesBtn.getBoundingClientRect();
   const noRect  = noBtn.getBoundingClientRect();
 
-  let existingBoxRects = scrambledBoxes.map(b => b.getBoundingClientRect());
+  const existingBoxRects = scrambledBoxes.map(b => b.getBoundingClientRect());
 
   while (!placed && attempts < MAX_ATTEMPTS) {
     attempts++;
@@ -244,6 +232,7 @@ function placeBoxRandomly(box, boxWidth, boxHeight) {
     }
     if (overlapFound) continue;
 
+    // If we get here, we found a non-overlapping spot
     box.style.left = x + 'px';
     box.style.top  = y + 'px';
     box.style.position = 'absolute';
@@ -251,6 +240,9 @@ function placeBoxRandomly(box, boxWidth, boxHeight) {
   }
 }
 
+/**
+ * rectsOverlap => used by placeBoxRandomly
+ */
 function rectsOverlap(rect1, rect2) {
   const left1   = rect1.x;
   const right1  = rect1.x + rect1.w;
@@ -269,7 +261,10 @@ function rectsOverlap(rect1, rect2) {
 function scrambleTextIntoBox(sentence, box) {
   const words = sentence.split(' ');
   const allLetters = [];
-  
+
+  const letterWidth = isMobileView() ? 7 : 10;
+  const wordSpacing = isMobileView() ? 3 : 5;
+
   words.forEach((word, wIndex) => {
     const letters = [...word];
     if (wIndex < words.length - 1) letters.push(" ");
@@ -280,15 +275,13 @@ function scrambleTextIntoBox(sentence, box) {
 
   let currentX = 10;
   let currentY = 20;
-  const letterWidth  = 10;
-  const wordSpacing  = 5;
 
   allLetters.forEach(obj => {
     const span = document.createElement('span');
     span.className = 'scrambled-letter';
     span.textContent = obj.char;
 
-    // random initial
+    // random initial position
     const randX = Math.random() * 100;
     const randY = Math.random() * 30;
     const randomAngle = Math.random() * 60 - 30;
@@ -319,11 +312,8 @@ function measureScrambledBoxWidth(box) {
 }
 
 /****************************************************************
- * "YES" BUTTON
- * 1) If not all boxes unscrambled, unscramble the next one 
- *    => short rose rain & fireworks
- * 2) If all boxes unscrambled & heading is "Will you be My Valentines?",
- *    => final alignment => rose rain & fireworks
+ * "YES" BUTTON => unscramble or final alignment
+ *   with rose rain + fireworks
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -334,14 +324,14 @@ function handleYesClick() {
 
   const heading = document.querySelector('h1');
 
-  // CASE 1: Not all boxes unscrambled yet
+  // Not all boxes unscrambled
   if (unscrambleIndex < scrambledBoxes.length) {
     console.log(`Unscrambling box #${unscrambleIndex+1}`);
     startUnscrambleProcess();
     return;
   }
 
-  // CASE 2: All boxes unscrambled
+  // All boxes unscrambled => final alignment
   if (heading.textContent === "Will you be My Valentines?") {
     console.log("Final alignment triggered.");
     handleFinalAlignment();
@@ -350,33 +340,31 @@ function handleYesClick() {
 
 function startUnscrambleProcess() {
   if (unscrambleIndex >= scrambledBoxes.length) return;
-
   const targetBox = scrambledBoxes[unscrambleIndex];
   unscrambleIndex++;
 
   document.body.style.backgroundColor = 'black';
 
-  // Show happy GIF
+  // show happy GIF
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
-  // Start unscramble + short (2.5s) rose rain
+  // unscramble the box with a short (2.5s) rose rain
   unscrambleBoxWithRoses(targetBox, () => {
     document.body.style.backgroundColor = originalBodyColor;
 
-    // If all unscrambled, update heading
+    // update heading if last box
     if (unscrambleIndex >= scrambledBoxes.length) {
       document.querySelector('h1').textContent = "Will you be My Valentines?";
       console.log("All boxes unscrambled! Heading updated.");
-      // Keep the GIF
     } else {
-      // Hide the GIF until next unscramble
+      // hide the GIF until next unscramble
       gifContainer.style.opacity = 0;
       setTimeout(() => { gifContainer.innerHTML = ''; }, 2000);
     }
   });
-  
-  // Also start fireworks for 2.5s
+
+  // also 2.5s fireworks
   startFireworks(2500);
 }
 
@@ -397,7 +385,6 @@ function unscrambleBoxWithRoses(box, onDone) {
 
   function animateNextWord() {
     if (currentWordIndex >= wordsCount) {
-      console.log("Box unscramble done.");
       if (onDone) onDone();
       return;
     }
@@ -418,19 +405,15 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startRoseRainAroundBox - 2.5s rose images
+ * short rose rain ~2.5s
  */
 function startRoseRainAroundBox(box, duration) {
-  console.log("startRoseRainAroundBox for " + duration + "ms");
   const endTime = Date.now() + duration;
   const rect = box.getBoundingClientRect();
 
   (function frame() {
     const now = Date.now();
-    if (now >= endTime) {
-      console.log("Rose rain around box ended.");
-      return;
-    }
+    if (now >= endTime) return;
 
     spawnRose({
       xMin: rect.left,
@@ -442,11 +425,11 @@ function startRoseRainAroundBox(box, duration) {
 }
 
 /**
- * spawnRose
+ * spawnRose => local rose.png
  */
 function spawnRose({ xMin, xMax, yStart }) {
   const rose = document.createElement('img');
-  rose.src = 'rose.png';  
+  rose.src = 'rose.png'; 
   rose.className = 'falling-rose';
 
   const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
@@ -455,6 +438,7 @@ function spawnRose({ xMin, xMax, yStart }) {
 
   document.body.appendChild(rose);
 
+  // remove after ~5s fall
   setTimeout(() => {
     if (rose.parentNode) {
       rose.parentNode.removeChild(rose);
@@ -463,29 +447,19 @@ function spawnRose({ xMin, xMax, yStart }) {
 }
 
 /****************************************************************
- * START / STOP FIREWORKS using fireworks-js
+ * FIREWORKS => runs fireworks for duration
  ****************************************************************/
 let fireworksInstance = null;
 
-/**
- * startFireworks(duration)
- *  creates a fireworks instance over <body>, 
- *  runs for 'duration' ms, then stops
- *
- *  Make sure you have:
- *    <script src="https://cdn.jsdelivr.net/npm/fireworks-js/dist/fireworks.js"></script>
- *  in index.html
- */
 function startFireworks(duration) {
   console.log(`startFireworks for ${duration}ms`);
 
-  // If an existing fireworks instance is running, stop it first
+  // If there's already an instance, stop it
   if (fireworksInstance) {
     fireworksInstance.stop();
     fireworksInstance = null;
   }
 
-  // Create new instance
   const container = document.body;
   fireworksInstance = new Fireworks(container, {
     speed: 3,
@@ -506,7 +480,6 @@ function startFireworks(duration) {
 
   fireworksInstance.start();
 
-  // Stop after 'duration' ms
   setTimeout(() => {
     if (fireworksInstance) {
       fireworksInstance.stop();
@@ -516,13 +489,13 @@ function startFireworks(duration) {
 }
 
 /****************************************************************
- * FINAL ALIGNMENT => 5s rose rain & 5s fireworks
+ * FINAL ALIGNMENT => 5s rose rain + fireworks
  ****************************************************************/
 function handleFinalAlignment() {
   console.log("handleFinalAlignment => screen black, line up boxes, 5s rose rain + fireworks.");
   document.body.style.backgroundColor = 'black';
 
-  alignBoxesLeftAndRightOfContainer();
+  alignBoxesVerticallyOrSides(); /* your choice of arrangement */
 
   // 5s rose rain
   startRoseRainFullScreen(5000, () => {
@@ -530,34 +503,32 @@ function handleFinalAlignment() {
     document.body.style.backgroundColor = originalBodyColor;
   });
 
-  // Also 5s fireworks
+  // 5s fireworks
   startFireworks(5000);
 }
 
 /**
- * alignBoxesLeftAndRightOfContainer
- *  e.g. 5 left, 5 right for 10 boxes
+ * alignBoxesVerticallyOrSides => pick your final arrangement
  */
-function alignBoxesLeftAndRightOfContainer() {
-  console.log("Aligning boxes (5 left, 5 right) around container...");
+function alignBoxesVerticallyOrSides() {
+  console.log("Aligning boxes for final arrangement...");
+  // Example: 5 left, 5 right
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
-
   const spacing = 10;  
-  const boxHeight = 60;
+  const boxHeight = isMobileView() ? 40 : 60;
 
   scrambledBoxes.forEach((box, i) => {
     const boxRect = box.getBoundingClientRect();
     const boxWidth = boxRect.width;
 
+    // first 5 => left, next 5 => right
     if (i < 5) {
-      // left column
       const topCoord = containerRect.top + i * (boxHeight + spacing);
       const leftCoord = containerRect.left - (boxWidth + 20);
       box.style.left = leftCoord + 'px';
       box.style.top  = topCoord  + 'px';
     } else {
-      // right column
       const colIndex = i - 5;
       const topCoord = containerRect.top + colIndex * (boxHeight + spacing);
       const leftCoord = containerRect.right + 20;
@@ -568,19 +539,16 @@ function alignBoxesLeftAndRightOfContainer() {
 }
 
 /**
- * startRoseRainFullScreen - spawns roses from top for 'duration' ms
+ * 5s full-screen rose rain
  */
 function startRoseRainFullScreen(duration, callback) {
-  console.log(`startRoseRainFullScreen for ${duration}ms`);
   const endTime = Date.now() + duration;
-
   (function frame() {
     const now = Date.now();
     if (now >= endTime) {
       if (callback) callback();
       return;
     }
-
     for (let i = 0; i < 3; i++) {
       spawnRose({ 
         xMin: 0, 
