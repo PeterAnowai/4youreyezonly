@@ -296,10 +296,9 @@ function measureScrambledBoxWidth(box) {
 /****************************************************************
  * "YES" BUTTON
  * 1) If not all boxes unscrambled, unscramble the next one 
- *    (with short flower rain near the box).
+ *    (with short CONFETTI near the box).
  * 2) If all boxes unscrambled and heading is 
- *    "Will you be My Valentines?", line them up 3 left / 3 right 
- *    next to the .container, then do a full-screen flower rain.
+ *    "Will you be My Valentines?", do fireworks + final alignment.
  ****************************************************************/
 yesBtn.addEventListener('click', handleYesClick);
 
@@ -336,7 +335,7 @@ function startUnscrambleProcess() {
   gifContainer.innerHTML = `<img src="${HAPPY_GIF_URL}" alt="Happy GIF">`;
   gifContainer.style.opacity = 1;
 
-  unscrambleBoxWithRoses(targetBox, () => {
+  unscrambleBoxWithConfetti(targetBox, () => {
     // After unscramble
     document.body.style.backgroundColor = originalBodyColor;
 
@@ -353,15 +352,18 @@ function startUnscrambleProcess() {
   });
 }
 
-function unscrambleBoxWithRoses(box, onDone) {
+/**
+ * Instead of a "rose rain," do a confetti burst near the unscrambling box.
+ */
+function unscrambleBoxWithConfetti(box, onDone) {
   if (box.__isUnscrambled) {
     if (onDone) onDone();
     return;
   }
   box.__isUnscrambled = true;
 
-  console.log("Starting flower rain around unscrambling box.");
-  startFlowerRainAroundBox(box, 2500);
+  console.log("Starting confetti bursts around unscrambling box.");
+  startConfettiBurstsAroundBox(box, 2500);
 
   const allLetters = box.__letters;
   const wordsCount = 1 + Math.max(...allLetters.map(l => l.wordIndex));
@@ -391,88 +393,65 @@ function unscrambleBoxWithRoses(box, onDone) {
 }
 
 /**
- * startFlowerRainAroundBox - spawns short-lived flower images 
- * near the top of the given box for 'duration' ms
+ * startConfettiBurstsAroundBox:
+ *   Creates short-lived confetti bursts near the top of the box for 'duration' ms
+ *   Using the canvas-confetti library.
  */
-function startFlowerRainAroundBox(box, duration) {
-  console.log("startFlowerRainAroundBox for " + duration + "ms");
+function startConfettiBurstsAroundBox(box, duration) {
+  console.log("startConfettiBurstsAroundBox for " + duration + "ms");
   const endTime = Date.now() + duration;
   const rect = box.getBoundingClientRect();
 
   (function frame() {
     const now = Date.now();
     if (now >= endTime) {
-      console.log("Flower rain around box ended.");
+      console.log("Confetti bursts done.");
       return;
     }
 
-    spawnFlower({
-      xMin: rect.left,
-      xMax: rect.right,
-      yStart: rect.top - 30
+    // Random x in [rect.left, rect.right], near top
+    const xPos = (Math.random() * (rect.right - rect.left) + rect.left) / window.innerWidth;
+    const yPos = (rect.top - 30) / window.innerHeight;
+    
+    // Launch a confetti burst from (xPos, yPos)
+    confetti({
+      origin: { x: xPos, y: yPos },
+      particleCount: 10,
+      spread: 55,
+      startVelocity: 25,
     });
+
     requestAnimationFrame(frame);
   })();
 }
 
-/**
- * spawnFlower - 
- *  uses an external flower image from a library (Pixabay, etc.)
- *  at a random x between xMin, xMax, and top = yStart 
- *  uses .falling-rose CSS for the falling animation
- */
-function spawnFlower({ xMin, xMax, yStart }) {
-  const flower = document.createElement('img');
-  
-  // Example: a rose PNG from Pixabay's CDN (free image)
-  // Replace with any other direct image URL you prefer
-  flower.src = "https://cdn.pixabay.com/photo/2016/10/25/12/28/rose-1764527_960_720.png";
-  
-  flower.className = 'falling-rose';
-
-  const xPos = Math.floor(Math.random() * (xMax - xMin)) + xMin;
-  flower.style.left = xPos + 'px';
-  flower.style.top  = yStart + 'px';
-
-  document.body.appendChild(flower);
-
-  // remove after animation (~5s)
-  setTimeout(() => {
-    if (flower.parentNode) {
-      flower.parentNode.removeChild(flower);
-    }
-  }, 5000);
-}
-
 /****************************************************************
- * FINAL ALIGNMENT:
+ * FINAL ALIGNMENT => Fireworks from the fireworks-js library
  *   1) Screen -> black
- *   2) Boxes -> 3 on left, 3 on right of .container
- *   3) Full-screen flower rain for 5s
+ *   2) Boxes => 3 on left, 3 on right of .container
+ *   3) Launch fireworks for 5s
  *   4) Return to pink
  ****************************************************************/
 function handleFinalAlignment() {
-  console.log("handleFinalAlignment => screen black, line up boxes left/right, flower rain.");
+  console.log("handleFinalAlignment => screen black, line up boxes, fireworks.");
   document.body.style.backgroundColor = 'black';
 
   alignBoxesLeftAndRightOfContainer();
 
-  startFlowerRainFullScreen(5000, () => {
-    console.log("Full-screen flower rain done. Return to pink.");
+  startFireworks(5000, () => {
+    console.log("Fireworks done. Return to pink.");
     document.body.style.backgroundColor = originalBodyColor;
   });
 }
 
 /**
- * Place the 6 boxes so that:
- *  - indices 0..2 on the left side of .container, stacked vertically
- *  - indices 3..5 on the right side of .container, stacked vertically
+ * Align the 6 boxes: indices 0..2 on the left, 3..5 on the right
  */
 function alignBoxesLeftAndRightOfContainer() {
   const mainContainer = document.querySelector('.container');
   const containerRect = mainContainer.getBoundingClientRect();
 
-  // We'll assume each box is ~60px tall, with 10px spacing
+  // We'll assume each box ~60px tall, with 10px spacing
   const spacing = 10;  
   const boxHeight = 60;
 
@@ -495,27 +474,41 @@ function alignBoxesLeftAndRightOfContainer() {
 }
 
 /**
- * startFlowerRainFullScreen - spawns flower images from the top 
- * for 'duration' ms across the entire screen
+ * startFireworks - runs fireworks effect for 'duration' ms 
+ * using the Fireworks.js library
  */
-function startFlowerRainFullScreen(duration, callback) {
-  console.log(`startFlowerRainFullScreen for ${duration}ms`);
-  const endTime = Date.now() + duration;
+function startFireworks(duration, callback) {
+  console.log(`startFireworks for ${duration}ms`);
 
-  (function frame() {
-    const now = Date.now();
-    if (now >= endTime) {
-      if (callback) callback();
-      return;
+  // Create a fireworks instance attached to the entire body
+  const container = document.body;
+  const fireworks = new Fireworks(container, {
+    /* example config options; tweak as you like */
+    hue: { min: 0, max: 345 },
+    delay: { min: 15, max: 15 },
+    speed: 3,
+    acceleration: 1.05,
+    friction: 0.95,
+    gravity: 1.5,
+    particles: 100,
+    trace: 3,
+    explosion: 5,
+    boundaries: {
+      x: 50,
+      y: 50,
+      width: container.clientWidth - 100,
+      height: container.clientHeight - 100
+    },
+    sound: {
+      enable: false
     }
+  });
 
-    for (let i = 0; i < 3; i++) {
-      spawnFlower({ 
-        xMin: 0, 
-        xMax: window.innerWidth, 
-        yStart: -60 
-      });
-    }
-    requestAnimationFrame(frame);
-  })();
+  fireworks.start();
+
+  // Stop fireworks after 'duration' ms
+  setTimeout(() => {
+    fireworks.stop();
+    if (callback) callback();
+  }, duration);
 }
