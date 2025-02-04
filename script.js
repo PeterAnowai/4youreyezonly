@@ -515,4 +515,4 @@ function startRoseRainFullScreen(duration, callback) {
     }
     requestAnimationFrame(frame);
   })();
-}xxx
+}
